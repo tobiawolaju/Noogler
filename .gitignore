@@ -8,6 +8,9 @@ Thumbs.db
 *.log
 *.pid
 
+/frontend/node_modules
+/backend/node_modules
+
 # Node / frontend / backend
 node_modules/
 **/node_modules/
