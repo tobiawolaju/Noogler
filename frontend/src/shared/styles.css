@@ -485,7 +485,7 @@ textarea {
 }
 
 .call-toggle.call-active {
-  background: rgba(248, 75, 75, 0.3);
+  background: rgba(255, 255, 255, 0.3);
   color: #0b141a;
   box-shadow: none;
 }
@@ -557,7 +557,7 @@ textarea {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0px;
   flex: 1;
   scrollbar-width: thin;
   scrollbar-color: rgba(11, 20, 26, 0.35) transparent;
@@ -633,7 +633,7 @@ textarea {
 }
 
 .wa-bubble-wrap.from-me .wa-bubble-tag {
-  background: #60bb5d;
+  background: #22cf70;
   border: none;
   color: #0b141a;
   text-align: right;
@@ -642,9 +642,9 @@ textarea {
 }
 
 .wa-bubble-wrap.from-body .wa-bubble-tag {
-  background: #3d8d89;
+  background: #3ba8df;
   border: none;
-  color: #0b141a;
+  color: #000000;
   font-size: large;
 }
 
@@ -658,24 +658,27 @@ textarea {
 }
 
 .wa-bubble.from-me {
-  margin-left: auto;
-  background: #91e78e;
+  margin: none;
+  background: #31ee86;
   color: #000000;
   align-self: flex-end;
+  margin-bottom: 8px;
 }
 
 .wa-bubble.from-body {
-  margin-right: auto;
-  background: #5db1ad;
+  margin: none;
+  background: #51c5ff;
   color: #000000;
 }
 
+
+/*the meta data */
 .wa-bubble small {
-  color: #000000;
+  color: #ffffff;
   opacity: 0.8;
   margin: 0;
   line-height: 1.2;
-  display: block;
+  display: none;
 }
 
 .wa-bubble-image {
@@ -723,8 +726,8 @@ textarea {
   height: 48px;
   border-radius: 50%;
   border: none;
-  background: #25d366;
-  color: #0b141a;
+  background: #27ff68;
+  color: #092d46;
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -746,7 +749,7 @@ textarea {
 .call-overlay {
   position: fixed;
   inset: 0;
-  background: #23b46c;
+  background: #00b991;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -840,7 +843,7 @@ textarea {
 }
 
 .call-overlay-action.call-overlay-end {
-  background: rgba(248, 75, 75, 0.3);
+  background: rgba(255, 255, 255, 0.3);
   color: #ffffff;
 }
 
@@ -878,12 +881,14 @@ textarea {
     width: 100%;
     margin: 0;
   }
+
   .wa-suggest {
     max-width: 100%;
     margin: 0;
     width: 100%;
   }
 }
+
 .wa-footer {
   position: sticky;
   bottom: 0;
@@ -948,7 +953,7 @@ textarea {
 .wa-panel {
   width: 100%;
   height: 100%;
-  background: #101b20;
+  background: #2285b6;
   color: #e9edef;
   border-radius: 0;
   padding: 24px;
