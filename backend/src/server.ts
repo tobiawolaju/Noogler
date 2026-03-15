@@ -33,6 +33,7 @@ log("info", `Backend listening on ws://127.0.0.1:${PORT}`);
 let localAgent: WebSocket | null = null;
 let localAgentReady = false;
 let reconnectTimer: NodeJS.Timeout | null = null;
+let agentIssueReported = false;
 
 const frontendClients = new Set<WebSocket>();
 
@@ -48,21 +49,28 @@ function connectLocalAgent() {
 
   localAgent.on("open", () => {
     localAgentReady = true;
+    agentIssueReported = false;
     log("info", `Connected to local agent at ${LOCAL_AGENT_WS}`);
     broadcast(makeEvent("agent_connected", "ok", `Connected to ${LOCAL_AGENT_WS}`));
   });
 
   localAgent.on("close", () => {
     localAgentReady = false;
-    log("warn", "Local agent disconnected");
-    broadcast(makeEvent("agent_disconnected", "error", "Local agent disconnected"));
+    if (!agentIssueReported) {
+      agentIssueReported = true;
+      log("warn", "Local agent disconnected");
+      broadcast(makeEvent("agent_disconnected", "error", "Local agent disconnected"));
+    }
     scheduleReconnect();
   });
 
   localAgent.on("error", (err) => {
     localAgentReady = false;
-    log("error", "Local agent error", err);
-    broadcast(makeEvent("agent_error", "error", "Local agent error"));
+    if (!agentIssueReported) {
+      agentIssueReported = true;
+      log("error", "Local agent error", err);
+      broadcast(makeEvent("agent_error", "error", "Local agent error"));
+    }
     scheduleReconnect();
   });
 
@@ -196,16 +204,30 @@ function isScreenshotEvent(payload: any): boolean {
   );
 }
 
-function sendToAgent(commands: any[] | object) {
+type CommandItem = { index?: number; instruction: string; tag?: string };
+
+function sendToAgent(commands: CommandItem[] | CommandItem) {
   if (!localAgentReady || !localAgent) {
     broadcast(makeEvent("agent_offline", "error", "Local agent not connected"));
     return;
   }
+
+  if (Array.isArray(commands)) {
+    const payload = {
+      index: 0,
+      instruction: JSON.stringify(commands),
+      tag: "ws"
+    };
+    log("debug", "Backend -> local agent (batch)", payload);
+    localAgent.send(JSON.stringify(payload));
+    return;
+  }
+
   const payload = {
-    index: 0,
-    instruction: JSON.stringify(commands),
-    tag: "ws"
+    index: commands.index ?? 0,
+    instruction: commands.instruction,
+    tag: commands.tag ?? "ws"
   };
-  log("debug", "Backend -> local agent", payload);
+  log("debug", "Backend -> local agent (single)", payload);
   localAgent.send(JSON.stringify(payload));
 }

@@ -98,6 +98,34 @@ main.landing {
   justify-content: center;
 }
 
+.floating-cta {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 20;
+  display: none;
+}
+
+.floating-cta.chat {
+  display: none;
+}
+
+.floating-cta.download {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .floating-cta.chat {
+    display: block;
+  }
+}
+
+@media (min-width: 961px) {
+  .floating-cta.download {
+    display: block;
+  }
+}
+
 .btn {
   padding: 12px 18px;
   border-radius: 999px;
@@ -289,19 +317,13 @@ textarea {
 /* WhatsApp-like chat layout */
 .wa-shell {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 1fr;
   min-height: 100vh;
   background: #0b141a;
 }
 
 .wa-sidebar {
-  background: #101b20;
-  color: #e9edef;
-  padding: 24px 18px;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  display: none;
 }
 
 .wa-brand {
@@ -453,11 +475,19 @@ textarea {
   background: #efe7dc;
   z-index: 2;
   padding-top: 8px;
+  cursor: default;
 }
 
 .wa-header-actions {
   display: flex;
   gap: 10px;
+  align-items: center;
+}
+
+.call-toggle.call-active {
+  background: rgba(248, 75, 75, 0.3);
+  color: #0b141a;
+  box-shadow: none;
 }
 
 .wa-icon-btn {
@@ -498,6 +528,13 @@ textarea {
 
 .wa-header h2 {
   margin: 0;
+}
+
+.wa-status-line {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  text-align: left;
+  color: #4a4a4a;
 }
 
 .wa-header p {
@@ -660,6 +697,8 @@ textarea {
   display: flex;
   gap: 12px;
   align-items: center;
+  width: 50%;
+  margin: 0 auto;
 }
 
 .wa-input input {
@@ -700,9 +739,109 @@ textarea {
 }
 
 .wa-send:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
   box-shadow: none;
+}
+
+.call-overlay {
+  position: fixed;
+  inset: 0;
+  background: #23b46c;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 32px 24px 48px;
+  gap: 20px;
+  color: #ffffff;
+  z-index: 1200;
+  text-align: center;
+  opacity: 1;
+}
+
+.call-overlay-brand {
+  position: absolute;
+  top: 20px;
+  left: 28px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+}
+
+.call-overlay-brand p {
+  margin: 0;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.call-overlay-brand small {
+  display: block;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.call-overlay-header {
+  position: absolute;
+  top: 20px;
+  left: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.call-overlay-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  color: #ffffff;
+}
+
+.call-overlay-content {
+  flex: 1;
+  width: 100%;
+}
+
+.call-overlay-status {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #ffffff;
+  text-transform: lowercase;
+  letter-spacing: 0.1em;
+}
+
+.call-overlay-actions {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+}
+
+.call-overlay-action {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(9, 28, 14, 0.35);
+}
+
+.call-overlay-action.call-overlay-end {
+  background: rgba(248, 75, 75, 0.3);
+  color: #ffffff;
 }
 
 .wa-quick {
@@ -728,8 +867,23 @@ textarea {
   padding: 12px;
   display: grid;
   gap: 10px;
+  max-width: 50%;
+  margin: 0 auto;
+  width: 100%;
+  text-align: left;
 }
 
+@media (max-width: 960px) {
+  .wa-input {
+    width: 100%;
+    margin: 0;
+  }
+  .wa-suggest {
+    max-width: 100%;
+    margin: 0;
+    width: 100%;
+  }
+}
 .wa-footer {
   position: sticky;
   bottom: 0;
@@ -786,21 +940,22 @@ textarea {
   inset: 0;
   background: rgba(7, 12, 16, 0.6);
   display: grid;
-  place-items: center;
+  place-items: stretch;
   z-index: 999;
-  padding: 18px;
+  padding: 0;
 }
 
 .wa-panel {
-  width: min(520px, 100%);
+  width: 100%;
+  height: 100%;
   background: #101b20;
   color: #e9edef;
-  border-radius: 20px;
+  border-radius: 0;
   padding: 24px;
   display: grid;
   gap: 20px;
   position: relative;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  box-shadow: none;
 }
 
 .wa-panel .wa-settings input {

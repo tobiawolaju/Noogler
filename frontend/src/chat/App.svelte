@@ -1,5 +1,10 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import OngoingCallOverlay from "./OngoingCallOverlay.svelte";
+  import HeaderBar from "./components/HeaderBar.svelte";
+  import Feed from "./components/Feed.svelte";
+  import FooterInput from "./components/FooterInput.svelte";
+  import MobilePanel from "./components/MobilePanel.svelte";
 
   let ws;
   let wsUrl = "ws://127.0.0.1:8787";
@@ -16,6 +21,77 @@
   let events = [];
   let feedEl;
   let showMobilePanel = false;
+
+  let callActive = false;
+  let overlayVisible = false;
+  let callStartTime = 0;
+  let elapsedMs = 0;
+  let callTimer;
+
+  const updateElapsed = () => {
+    elapsedMs = Date.now() - callStartTime;
+  };
+
+  const startTimer = () => {
+    stopTimer();
+    updateElapsed();
+    callTimer = setInterval(updateElapsed, 1000);
+  };
+
+  const stopTimer = () => {
+    if (callTimer) {
+      clearInterval(callTimer);
+      callTimer = undefined;
+    }
+  };
+
+  const formatDuration = (ms) => {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  };
+
+  const startCall = () => {
+    callActive = true;
+    overlayVisible = true;
+    callStartTime = Date.now();
+    elapsedMs = 0;
+    startTimer();
+  };
+
+  const endCall = () => {
+    callActive = false;
+    overlayVisible = false;
+    stopTimer();
+    elapsedMs = 0;
+  };
+
+  const handleCallButtonClick = (event) => {
+    event.stopPropagation();
+    if (!callActive) {
+      startCall();
+      return;
+    }
+    endCall();
+  };
+
+  const handleHeaderClick = () => {
+    if (callActive) {
+      overlayVisible = true;
+    }
+  };
+
+  const handleOverlayClose = () => {
+    overlayVisible = false;
+  };
+
+  const handleOverlayEnd = () => {
+    endCall();
+  };
+
+  $: callDurationLabel = formatDuration(elapsedMs);
+  $: statusLine = callActive ? `ongoing call — ${callDurationLabel}` : connected ? "online" : "offline";
 
   const connect = () => {
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
@@ -138,12 +214,8 @@
   $: filteredTemplates = showSuggestions
     ? commandTemplates.filter((cmd) => cmd.toLowerCase().includes(suggestionQuery))
     : [];
-  $: hasInput = instruction.trim().length > 0;
-
   const openPanel = () => {
-    if (window.matchMedia && window.matchMedia("(max-width: 960px)").matches) {
-      showMobilePanel = true;
-    }
+    showMobilePanel = true;
   };
 
   const closePanel = () => {
@@ -156,20 +228,25 @@
 
   onDestroy(() => {
     disconnect();
+    stopTimer();
   });
 </script>
 
+
+
+
 <div class="wa-shell">
   <aside class="wa-sidebar">
-    <div class="wa-brand">
-      <a class="wa-home" href="/index.html" aria-label="Back to home">
-        <span class="material-symbols-outlined">home</span>
-      </a>
-      <div>
-        <h3>Home</h3>
-        <p>Return to landing</p>
+      <div class="wa-brand">
+        <a class="wa-home" href="/index.html" aria-label="Back to home">
+          <span class="material-symbols-outlined">home</span>
+        </a>
+        <div>
+          <h3>logoout home</h3>
+
+          <p>Return to landing</p>
+        </div>
       </div>
-    </div>
 
     <div class="wa-connection">
       <span class="dot" class:online={connected}></span>
@@ -219,17 +296,26 @@
   </aside>
 
   <main class="wa-main">
-    <header class="wa-header">
+    <header class="wa-header" on:click={handleHeaderClick}>
       <div class="wa-toolbar">
         <div>
-          <button type="button" class="wa-title-btn" on:click={openPanel} aria-label="Open agent details">
-            <h2>Local Agent</h2>
+          <button type="button" class="wa-title-btn" on:click|stopPropagation={openPanel} aria-label="Open agent details">
+            <div>
+              <h2>Local Agent</h2>
+              <p class="wa-status-line">{statusLine}</p>
+            </div>
           </button>
         </div>
       </div>
       <div class="wa-header-actions">
-        <button type="button" class="wa-icon-btn" aria-label="Voice call">
-          <span class="material-symbols-outlined">call</span>
+        <button
+          type="button"
+          class="wa-icon-btn call-toggle"
+          class:call-active={callActive}
+          on:click|stopPropagation={handleCallButtonClick}
+          aria-label={callActive ? "End call" : "Start call"}
+        >
+          <span class="material-symbols-outlined">{callActive ? "call_end" : "call"}</span>
         </button>
       </div>
     </header>
@@ -241,11 +327,13 @@
           <p>Send a command to see replies from the local body.</p>
         </div>
       {:else}
-        {#each events as event}
+        {#each events as event, i}
           <div class="wa-bubble-wrap {event.type === 'outgoing' ? 'from-me' : 'from-body'}">
-            <div class="wa-bubble-tag">
-              {event.type === "outgoing" ? "User" : "Agent"}
-            </div>
+            {#if i === 0 || events[i - 1].type !== event.type}
+              <div class="wa-bubble-tag">
+                {event.type === "outgoing" ? "User" : "Agent"}
+              </div>
+            {/if}
             <div
               class="wa-bubble {event.type === 'outgoing' ? 'from-me' : 'from-body'} {event.status === 'error' ? 'error' : 'ok'}"
             >
@@ -309,21 +397,25 @@
         bind:value={instruction}
         placeholder="Type a command... (e.g. move 400 400)"
       />
-        <button type="submit" class="wa-send" disabled={!connected} aria-label={hasInput ? "Send" : "Voice"}>
-          {#if hasInput}
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M3.4 20.6 21 12 3.4 3.4l-.6 6.7 10.1 1.9-10.1 1.9.6 6.7Z" />
-            </svg>
-          {:else}
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M12 14a2.5 2.5 0 0 0 2.5-2.5v-5a2.5 2.5 0 1 0-5 0v5A2.5 2.5 0 0 0 12 14Zm5-2.5a.8.8 0 0 0-1.6 0 3.4 3.4 0 1 1-6.8 0 .8.8 0 0 0-1.6 0 5 5 0 0 0 4.6 5v2.2h-2a.8.8 0 1 0 0 1.6h5.6a.8.8 0 1 0 0-1.6h-2V16.5a5 5 0 0 0 4.8-5Z" />
-            </svg>
-          {/if}
+        <button type="submit" class="wa-send" disabled={!connected} aria-label="Send">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M3.4 20.6 21 12 3.4 3.4l-.6 6.7 10.1 1.9-10.1 1.9.6 6.7Z" />
+          </svg>
         </button>
       </form>
     </div>
   </main>
+
+  <OngoingCallOverlay
+    visible={overlayVisible}
+    elapsedLabel={callDurationLabel}
+    onClose={handleOverlayClose}
+    onEnd={handleOverlayEnd}
+  />
 </div>
+
+
+
 
 {#if showMobilePanel}
   <div class="wa-overlay">
@@ -350,6 +442,9 @@
         </div>
       </div>
 
+
+
+
       <div class="wa-chatlist">
         <h4>Command Streams</h4>
         <div class="wa-chat-item active">
@@ -368,24 +463,6 @@
         </div>
       </div>
 
-      <div class="wa-settings">
-        <label>
-          WebSocket URL
-          <input bind:value={wsUrl} placeholder="ws://127.0.0.1:8765" />
-        </label>
-        <label>
-          Tag
-          <input bind:value={tag} placeholder="ws" />
-        </label>
-        <div class="wa-actions">
-          <button class="btn ghost" on:click={connect}>Connect</button>
-          <button class="btn ghost" on:click={disconnect}>Disconnect</button>
-          <button class="btn ghost" on:click={sendPing}>Ping</button>
-        </div>
-        {#if lastError}
-          <p class="note">{lastError}</p>
-        {/if}
-      </div>
     </div>
   </div>
 {/if}
