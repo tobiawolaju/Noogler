@@ -231,179 +231,26 @@
     stopTimer();
   });
 </script>
-
-
-
-
 <div class="wa-shell">
-  <aside class="wa-sidebar">
-      <div class="wa-brand">
-        <a class="wa-home" href="/index.html" aria-label="Back to home">
-          <span class="material-symbols-outlined">home</span>
-        </a>
-        <div>
-          <h3>logoout home</h3>
-
-          <p>Return to landing</p>
-        </div>
-      </div>
-
-    <div class="wa-connection">
-      <span class="dot" class:online={connected}></span>
-      <div>
-        <strong>{connected ? "Connected" : "Disconnected"}</strong>
-        <small>{connected ? "Listening on 127.0.0.1:8765" : "Waiting for agent"}</small>
-        <small>Auto-reconnect: {connected ? "on" : "waiting"}</small>
-      </div>
-    </div>
-
-    <div class="wa-chatlist">
-      <h4>Command Streams</h4>
-      <div class="wa-chat-item active">
-        <div>
-          <strong>Local Agent</strong>
-          <span>ws</span>
-        </div>
-        <p>Live execution events</p>
-      </div>
-      <div class="wa-chat-item">
-        <div>
-          <strong>System</strong>
-          <span>ping</span>
-        </div>
-        <p>Health & latency checks</p>
-      </div>
-    </div>
-
-    <div class="wa-settings">
-      <label>
-        WebSocket URL
-        <input bind:value={wsUrl} placeholder="ws://127.0.0.1:8765" />
-      </label>
-      <label>
-        Tag
-        <input bind:value={tag} placeholder="ws" />
-      </label>
-      <div class="wa-actions">
-        <button class="btn ghost" on:click={connect}>Connect</button>
-        <button class="btn ghost" on:click={disconnect}>Disconnect</button>
-        <button class="btn ghost" on:click={sendPing}>Ping</button>
-      </div>
-      {#if lastError}
-        <p class="note">{lastError}</p>
-      {/if}
-    </div>
-  </aside>
-
   <main class="wa-main">
-    <header class="wa-header" on:click={handleHeaderClick}>
-      <div class="wa-toolbar">
-        <div>
-          <button type="button" class="wa-title-btn" on:click|stopPropagation={openPanel} aria-label="Open agent details">
-            <div>
-              <h2>Local Agent</h2>
-              <p class="wa-status-line">{statusLine}</p>
-            </div>
-          </button>
-        </div>
-      </div>
-      <div class="wa-header-actions">
-        <button
-          type="button"
-          class="wa-icon-btn call-toggle"
-          class:call-active={callActive}
-          on:click|stopPropagation={handleCallButtonClick}
-          aria-label={callActive ? "End call" : "Start call"}
-        >
-          <span class="material-symbols-outlined">{callActive ? "call_end" : "call"}</span>
-        </button>
-      </div>
-    </header>
+    <HeaderBar
+      {statusLine}
+      {callActive}
+      onOpenPanel={openPanel}
+      onToggleCall={handleCallButtonClick}
+      onHeaderClick={handleHeaderClick}
+    />
 
-    <section class="wa-feed" bind:this={feedEl}>
-      {#if events.length === 0}
-        <div class="wa-empty">
-          <h3>No events yet</h3>
-          <p>Send a command to see replies from the local body.</p>
-        </div>
-      {:else}
-        {#each events as event, i}
-          <div class="wa-bubble-wrap {event.type === 'outgoing' ? 'from-me' : 'from-body'}">
-            {#if i === 0 || events[i - 1].type !== event.type}
-              <div class="wa-bubble-tag">
-                {event.type === "outgoing" ? "User" : "Agent"}
-              </div>
-            {/if}
-            <div
-              class="wa-bubble {event.type === 'outgoing' ? 'from-me' : 'from-body'} {event.status === 'error' ? 'error' : 'ok'}"
-            >
-            {#if event.type === "outgoing"}
-              <strong>{event.text ?? event.instruction}</strong>
-              <small>Tag: {event.tag}</small>
-            {:else if event.type === "pong"}
-              <strong>Pong</strong>
-              <small>ts_ms: {event.ts_ms}</small>
-            {:else if event.type === "error"}
-              <strong>Error</strong>
-              <small>{event.error}</small>
-            {:else if event.type === "raw"}
-              <strong>Raw</strong>
-              <small>{event.payload}</small>
-            {:else}
-              <strong>{event.instruction}</strong>
-              <small>Status: {event.status} · Tag: {event.tag}</small>
-              <small>Detail: {event.detail}</small>
-              {#if event.screenshot_path}
-                <small>Path: {event.screenshot_path}</small>
-              {/if}
-              {#if event.screenshot_data_url}
-                <img class="wa-bubble-image" src={event.screenshot_data_url} alt="Screenshot" loading="lazy" />
-              {/if}
-              <small>Duration: {event.duration_ms} ms</small>
-            {/if}
-            </div>
-          </div>
-        {/each}
-      {/if}
-    </section>
+    <Feed {events} bind:feedEl />
 
-    <div class="wa-footer">
-      {#if showSuggestions}
-        <div class="wa-suggest">
-          <div class="wa-suggest-header">
-            <span>Command templates</span>
-            <small>Type to filter, click to insert</small>
-          </div>
-          <div class="wa-suggest-list">
-            {#if filteredTemplates.length === 0}
-              <div class="wa-suggest-empty">No matches</div>
-            {:else}
-              {#each filteredTemplates as cmd}
-                <button
-                  class="wa-suggest-item"
-                  type="button"
-                  on:click={() => (instruction = cmd)}
-                >
-                  {cmd}
-                </button>
-              {/each}
-            {/if}
-          </div>
-        </div>
-      {/if}
-
-      <form class="wa-input" on:submit|preventDefault={sendCommand}>
-      <input
-        bind:value={instruction}
-        placeholder="Type a command... (e.g. move 400 400)"
-      />
-        <button type="submit" class="wa-send" disabled={!connected} aria-label="Send">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M3.4 20.6 21 12 3.4 3.4l-.6 6.7 10.1 1.9-10.1 1.9.6 6.7Z" />
-          </svg>
-        </button>
-      </form>
-    </div>
+    <FooterInput
+      bind:instruction
+      {connected}
+      {showSuggestions}
+      {filteredTemplates}
+      onSelectTemplate={(cmd) => (instruction = cmd)}
+      onSubmit={sendCommand}
+    />
   </main>
 
   <OngoingCallOverlay
@@ -412,58 +259,16 @@
     onClose={handleOverlayClose}
     onEnd={handleOverlayEnd}
   />
+
+  <MobilePanel
+    visible={showMobilePanel}
+    {connected}
+    bind:wsUrl
+    bind:tag
+    {lastError}
+    onClose={closePanel}
+    onConnect={connect}
+    onDisconnect={disconnect}
+    onPing={sendPing}
+  />
 </div>
-
-
-
-
-{#if showMobilePanel}
-  <div class="wa-overlay">
-    <div class="wa-panel">
-      <button type="button" class="wa-panel-close" on:click={closePanel} aria-label="Close panel">
-        ×
-      </button>
-      <div class="wa-brand panel-brand">
-        <a class="wa-home" href="/index.html" aria-label="Back to home">
-          <span class="material-symbols-outlined">home</span>
-        </a>
-        <div>
-          <h3>Home</h3>
-          <p>Return to landing</p>
-        </div>
-      </div>
-
-      <div class="wa-connection">
-        <span class="dot" class:online={connected}></span>
-        <div>
-          <strong>{connected ? "Connected" : "Disconnected"}</strong>
-          <small>{connected ? "Listening on 127.0.0.1:8765" : "Waiting for agent"}</small>
-          <small>Auto-reconnect: {connected ? "on" : "waiting"}</small>
-        </div>
-      </div>
-
-
-
-
-      <div class="wa-chatlist">
-        <h4>Command Streams</h4>
-        <div class="wa-chat-item active">
-          <div>
-            <strong>Local Agent</strong>
-            <span>ws</span>
-          </div>
-          <p>Live execution events</p>
-        </div>
-        <div class="wa-chat-item">
-          <div>
-            <strong>System</strong>
-            <span>ping</span>
-          </div>
-          <p>Health & latency checks</p>
-        </div>
-      </div>
-
-    </div>
-  </div>
-{/if}
-

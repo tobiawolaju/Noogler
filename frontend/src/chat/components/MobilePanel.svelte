@@ -1,5 +1,4 @@
 <script>
-  import Sidebar from "./Sidebar.svelte";
 
   export let visible = false;
   export let connected = false;
@@ -18,15 +17,9 @@
       <button type="button" class="wa-panel-close" on:click={onClose} aria-label="Close panel">
         ×
       </button>
-      <Sidebar
-        {connected}
-        bind:wsUrl
-        bind:tag
-        {lastError}
-        onConnect={onConnect}
-        onDisconnect={onDisconnect}
-        onPing={onPing}
-      />
+    <h1>Hello, I am your inten and this is the intern dashboard</h1>
+
+
     </div>
   </div>
 {/if}
