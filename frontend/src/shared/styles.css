@@ -99,12 +99,16 @@ main.landing {
 }
 
 .cta-bar {
+  position: fixed;
+  bottom: 32px;
+  left: 0;
+  right: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
   justify-content: center;
   align-items: center;
-  padding: 32px 24px 48px;
+  z-index: 20;
 }
 
 .btn {
