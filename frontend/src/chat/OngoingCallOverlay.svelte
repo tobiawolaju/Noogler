@@ -10,7 +10,7 @@
     <div class="call-overlay-brand">
     </div>
     <div class="call-overlay-header">
-      <h2>Local Agent</h2>
+      <h2>Noogler</h2>
       <p class="call-overlay-status">ongoing call - {elapsedLabel}</p>
     </div>
     <div class="call-overlay-content">

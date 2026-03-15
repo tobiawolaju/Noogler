@@ -16,7 +16,7 @@
         aria-label="Open agent details"
       >
         <div>
-          <h2>Local Agent</h2>
+          <h2>Noogler</h2>
           <p class="wa-status-line">{statusLine}</p>
         </div>
       </button>

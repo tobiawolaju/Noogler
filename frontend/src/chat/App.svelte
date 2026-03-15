@@ -91,7 +91,7 @@
   };
 
   $: callDurationLabel = formatDuration(elapsedMs);
-  $: statusLine = callActive ? `ongoing call - ${callDurationLabel}` : connected ? "online" : "offline";
+  $: statusLine = callActive ? `${callDurationLabel}` : connected ? "online" : "offline";
 
   const connect = () => {
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
