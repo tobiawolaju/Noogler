@@ -98,32 +98,13 @@ main.landing {
   justify-content: center;
 }
 
-.floating-cta {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: 20;
-  display: none;
-}
-
-.floating-cta.chat {
-  display: none;
-}
-
-.floating-cta.download {
-  display: none;
-}
-
-@media (max-width: 960px) {
-  .floating-cta.chat {
-    display: block;
-  }
-}
-
-@media (min-width: 961px) {
-  .floating-cta.download {
-    display: block;
-  }
+.cta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 24px 48px;
 }
 
 .btn {
