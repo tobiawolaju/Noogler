@@ -54,3 +54,10 @@ logs/
 # IDE
 .vscode/
 .idea/
+
+
+ServiceAccountsJson.json
+*.json
+.env
+
+backend/ServiceAccountsJson.json
