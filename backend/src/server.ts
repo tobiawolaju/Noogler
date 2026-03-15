@@ -2,18 +2,10 @@ import "dotenv/config";
 import { WebSocket, WebSocketServer } from "ws";
 
 const PORT = Number(process.env.BACKEND_PORT || 8787);
-const LOCAL_AGENT_WS = process.env.LOCAL_AGENT_WS || "ws://127.0.0.1:8765";
-const SCREENSHOT_PATH =
-  process.env.SCREENSHOT_PATH || "C:\\temp\\intern-proof.png";
 const LOG_LEVEL = (process.env.LOG_LEVEL || "info").toLowerCase();
 
 type LogLevel = "debug" | "info" | "warn" | "error";
-const LOG_LEVELS: Record<LogLevel, number> = {
-  debug: 10,
-  info: 20,
-  warn: 30,
-  error: 40
-};
+const LOG_LEVELS: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40 };
 
 function log(level: LogLevel, message: string, meta?: unknown) {
   if (LOG_LEVELS[level] < (LOG_LEVELS[LOG_LEVEL as LogLevel] || 20)) return;
@@ -25,91 +17,37 @@ function log(level: LogLevel, message: string, meta?: unknown) {
   }
 }
 
-/* ── WebSocket server ─────────────────────────────── */
-
 const wss = new WebSocketServer({ port: PORT });
-log("info", `Backend listening on ws://127.0.0.1:${PORT}`);
+log("info", `Backend listening on ws://0.0.0.0:${PORT}`);
 
-let localAgent: WebSocket | null = null;
-let localAgentReady = false;
-let reconnectTimer: NodeJS.Timeout | null = null;
-let agentIssueReported = false;
-
-const frontendClients = new Set<WebSocket>();
-
-/* ── Local agent connection ───────────────────────── */
-
-function connectLocalAgent() {
-  if (localAgent && (localAgent.readyState === WebSocket.OPEN || localAgent.readyState === WebSocket.CONNECTING)) {
-    return;
-  }
-
-  localAgentReady = false;
-  localAgent = new WebSocket(LOCAL_AGENT_WS);
-
-  localAgent.on("open", () => {
-    localAgentReady = true;
-    agentIssueReported = false;
-    log("info", `Connected to local agent at ${LOCAL_AGENT_WS}`);
-    broadcast(makeEvent("agent_connected", "ok", `Connected to ${LOCAL_AGENT_WS}`));
-  });
-
-  localAgent.on("close", () => {
-    localAgentReady = false;
-    if (!agentIssueReported) {
-      agentIssueReported = true;
-      log("warn", "Local agent disconnected");
-      broadcast(makeEvent("agent_disconnected", "error", "Local agent disconnected"));
-    }
-    scheduleReconnect();
-  });
-
-  localAgent.on("error", (err) => {
-    localAgentReady = false;
-    if (!agentIssueReported) {
-      agentIssueReported = true;
-      log("error", "Local agent error", err);
-      broadcast(makeEvent("agent_error", "error", "Local agent error"));
-    }
-    scheduleReconnect();
-  });
-
-  localAgent.on("message", (data) => {
-    let payload: unknown;
-    try {
-      payload = JSON.parse(data.toString());
-    } catch {
-      payload = { type: "raw", payload: data.toString() };
-    }
-    log("debug", "Local agent -> backend", payload);
-    broadcast(payload);
-
-    if (isScreenshotEvent(payload)) {
-      broadcast(makeEvent("done", "ok", "Done. Screenshot attached."));
-    }
-  });
-}
-
-function scheduleReconnect() {
-  if (reconnectTimer) return;
-  reconnectTimer = setTimeout(() => {
-    reconnectTimer = null;
-    connectLocalAgent();
-  }, 1000);
-}
-
-connectLocalAgent();
-
-/* ── Frontend connection handler ──────────────────── */
+// Track connections by user_uid
+const agentsByUid = new Map<string, WebSocket>();
+const frontendsByUid = new Map<string, Set<WebSocket>>();
 
 wss.on("connection", (ws) => {
-  frontendClients.add(ws);
-  ws.send(JSON.stringify(makeEvent("backend_ready", "ok", "Backend connected")));
-  log("info", "Frontend connected");
+  let isAgent = false;
+  let isFrontend = false;
+  let clientUid: string | null = null;
+  let deviceId: string | null = null;
+
+  log("info", "New client connected. Waiting for handshake...");
 
   ws.on("close", () => {
-    frontendClients.delete(ws);
-    log("info", "Frontend disconnected");
+    log("info", `Client disconnected. IsAgent=${isAgent}, IsFrontend=${isFrontend}, UID=${clientUid}`);
+    if (isAgent && clientUid) {
+      if (agentsByUid.get(clientUid) === ws) {
+        agentsByUid.delete(clientUid);
+        broadcastToFrontends(clientUid, makeEvent("agent_disconnected", "error", "Local agent disconnected"));
+      }
+    } else if (isFrontend && clientUid) {
+      const set = frontendsByUid.get(clientUid);
+      if (set) {
+        set.delete(ws);
+        if (set.size === 0) {
+          frontendsByUid.delete(clientUid);
+        }
+      }
+    }
   });
 
   ws.on("message", (data) => {
@@ -118,7 +56,7 @@ wss.on("connection", (ws) => {
       msg = JSON.parse(data.toString());
     } catch {
       ws.send(JSON.stringify({ type: "error", error: "Invalid JSON" }));
-      log("warn", "Invalid JSON from frontend", data.toString());
+      log("warn", "Invalid JSON from client", data.toString());
       return;
     }
 
@@ -128,53 +66,94 @@ wss.on("connection", (ws) => {
       return;
     }
 
-    // Expect the frontend to send commands directly
-    // Supported shapes:
-    //   { type: "commands", commands: [ {index, instruction, tag}, ... ] }
-    //   { instruction: "...", tag: "..." }   (single command shorthand)
-    //   { text: "..." }                      (raw text → forwarded as-is)
-
-    if (!localAgentReady || !localAgent) {
-      ws.send(JSON.stringify(makeEvent("agent_offline", "error", "Local agent not connected")));
+    // --- Handshakes ---
+    if (msg.type === "agent_handshake") {
+      isAgent = true;
+      clientUid = msg.user_uid;
+      deviceId = msg.device_id;
+      if (clientUid) {
+        agentsByUid.set(clientUid, ws);
+        log("info", `Agent registered for UID=${clientUid}, DeviceID=${deviceId}`);
+        broadcastToFrontends(clientUid, makeEvent("agent_connected", "ok", `Connected to agent ${deviceId}`));
+      }
       return;
     }
 
-    if (msg.type === "commands" && Array.isArray(msg.commands)) {
-      // Batch of commands from frontend
-      log("info", "Received commands from frontend", { count: msg.commands.length, commands: msg.commands });
-      sendToAgent(msg.commands);
-      ws.send(JSON.stringify(makeEvent("commands_sent", "ok", `Sent ${msg.commands.length} commands to agent`)));
+    if (msg.type === "frontend_handshake") {
+      isFrontend = true;
+      clientUid = msg.user_uid;
+      if (clientUid) {
+        if (!frontendsByUid.has(clientUid)) {
+          frontendsByUid.set(clientUid, new Set());
+        }
+        frontendsByUid.get(clientUid)!.add(ws);
+        log("info", `Frontend registered for UID=${clientUid}`);
+        ws.send(JSON.stringify(makeEvent("backend_ready", "ok", "Backend connected")));
+        
+        if (agentsByUid.has(clientUid)) {
+           ws.send(JSON.stringify(makeEvent("agent_connected", "ok", "Local agent is already connected")));
+        } else {
+           ws.send(JSON.stringify(makeEvent("agent_offline", "error", "Local agent not connected")));
+        }
+      }
       return;
     }
 
-    if (msg.instruction) {
-      // Single command shorthand
-      const command = { index: 0, instruction: msg.instruction, tag: msg.tag || "ws" };
-      log("info", "Received single command from frontend", command);
-      sendToAgent(command);
-      ws.send(JSON.stringify(makeEvent("commands_sent", "ok", `Sent command: ${msg.instruction}`)));
+    // --- Message Routing ---
+    if (!clientUid) {
+      ws.send(JSON.stringify({ type: "error", error: "Must send handshake first" }));
       return;
     }
 
-    if (msg.text) {
-      // Raw text — wrap as a single instruction and forward
-      const command = { index: 0, instruction: msg.text, tag: "ws" };
-      log("info", "Received text from frontend, forwarding to agent", { text: msg.text });
-      sendToAgent(command);
-      ws.send(JSON.stringify(makeEvent("commands_sent", "ok", `Forwarded: ${msg.text}`)));
+    if (isAgent) {
+      log("debug", `Agent -> Backend for UID=${clientUid}`, msg);
+      broadcastToFrontends(clientUid, msg);
+      if (isScreenshotEvent(msg)) {
+        broadcastToFrontends(clientUid, makeEvent("done", "ok", "Done. Screenshot attached."));
+      }
       return;
     }
 
-    ws.send(JSON.stringify({ type: "error", error: "Unknown message format" }));
-    log("warn", "Unknown message format from frontend", msg);
+    if (isFrontend) {
+      const agentWs = agentsByUid.get(clientUid);
+      if (!agentWs || agentWs.readyState !== WebSocket.OPEN) {
+        ws.send(JSON.stringify(makeEvent("agent_offline", "error", "Local agent not connected")));
+        return;
+      }
+
+      if (msg.type === "commands" && Array.isArray(msg.commands)) {
+        log("info", `Frontend -> Agent for UID=${clientUid} (batch)`, { count: msg.commands.length });
+        sendToAgent(agentWs, msg.commands);
+        ws.send(JSON.stringify(makeEvent("commands_sent", "ok", `Sent ${msg.commands.length} commands to agent`)));
+        return;
+      }
+
+      if (msg.instruction) {
+        const command = { index: 0, instruction: msg.instruction, tag: msg.tag || "ws" };
+        log("info", `Frontend -> Agent for UID=${clientUid} (single)`, command);
+        sendToAgent(agentWs, command);
+        ws.send(JSON.stringify(makeEvent("commands_sent", "ok", `Sent command: ${msg.instruction}`)));
+        return;
+      }
+
+      if (msg.text) {
+        const command = { index: 0, instruction: msg.text, tag: msg.tag || "ws" };
+        log("info", `Frontend -> Agent for UID=${clientUid} (raw text)`, { text: msg.text });
+        sendToAgent(agentWs, command);
+        ws.send(JSON.stringify(makeEvent("commands_sent", "ok", `Forwarded: ${msg.text}`)));
+        return;
+      }
+    }
   });
 });
 
 /* ── Helpers ──────────────────────────────────────── */
 
-function broadcast(event: unknown) {
+function broadcastToFrontends(uid: string, event: unknown) {
+  const set = frontendsByUid.get(uid);
+  if (!set) return;
   const message = JSON.stringify(event);
-  for (const client of frontendClients) {
+  for (const client of set) {
     if (client.readyState === WebSocket.OPEN) {
       client.send(message);
     }
@@ -206,20 +185,14 @@ function isScreenshotEvent(payload: any): boolean {
 
 type CommandItem = { index?: number; instruction: string; tag?: string };
 
-function sendToAgent(commands: CommandItem[] | CommandItem) {
-  if (!localAgentReady || !localAgent) {
-    broadcast(makeEvent("agent_offline", "error", "Local agent not connected"));
-    return;
-  }
-
+function sendToAgent(agentWs: WebSocket, commands: CommandItem[] | CommandItem) {
   if (Array.isArray(commands)) {
     const payload = {
       index: 0,
       instruction: JSON.stringify(commands),
       tag: "ws"
     };
-    log("debug", "Backend -> local agent (batch)", payload);
-    localAgent.send(JSON.stringify(payload));
+    agentWs.send(JSON.stringify(payload));
     return;
   }
 
@@ -228,6 +201,5 @@ function sendToAgent(commands: CommandItem[] | CommandItem) {
     instruction: commands.instruction,
     tag: commands.tag ?? "ws"
   };
-  log("debug", "Backend -> local agent (single)", payload);
-  localAgent.send(JSON.stringify(payload));
+  agentWs.send(JSON.stringify(payload));
 }

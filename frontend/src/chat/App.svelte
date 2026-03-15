@@ -1,10 +1,14 @@
 <script>
   import { onMount, onDestroy } from "svelte";
+  import { auth } from "../../firebase.js";
+  import { onAuthStateChanged } from "firebase/auth";
   import OngoingCallOverlay from "./OngoingCallOverlay.svelte";
   import HeaderBar from "./components/HeaderBar.svelte";
   import Feed from "./components/Feed.svelte";
   import FooterInput from "./components/FooterInput.svelte";
   import MobilePanel from "./components/MobilePanel.svelte";
+
+  let currentUser = null;
 
   let ws;
   let wsUrl = "ws://127.0.0.1:8787";
@@ -94,6 +98,7 @@
   $: statusLine = callActive ? `${callDurationLabel}` : connected ? "online" : "offline";
 
   const connect = () => {
+    if (!currentUser) return; // Wait for auth
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
       return;
     }
@@ -105,6 +110,8 @@
     ws.addEventListener("open", () => {
       connected = true;
       reconnectAttempts = 0;
+      // Send handshake exactly as backend expects
+      ws.send(JSON.stringify({ type: "frontend_handshake", user_uid: currentUser.uid }));
     });
 
     ws.addEventListener("close", () => {
@@ -222,11 +229,22 @@
     showMobilePanel = false;
   };
 
+  let authUnsubscribe;
+
   onMount(() => {
-    connect();
+    authUnsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        connect();
+      } else {
+        currentUser = null;
+        disconnect();
+      }
+    });
   });
 
   onDestroy(() => {
+    if (authUnsubscribe) authUnsubscribe();
     disconnect();
     stopTimer();
   });

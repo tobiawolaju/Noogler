@@ -6,24 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Noogler</title>
   <link rel="stylesheet" href="/src/shared/styles.css" />
+  <!-- JSZip for client-side zip generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     /* ── Auth gate states ── */
-    .cta-bar { transition: opacity 0.3s ease; }
+    .cta-bar {
+      transition: opacity 0.3s ease;
+    }
 
-    /* Avatar inside button */
-    .btn-pfp {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .btn-pfp img {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.7);
-      object-fit: cover;
-      flex-shrink: 0;
-    }
+
 
     /* Google sign-in button */
     .btn.google {
@@ -32,14 +23,16 @@
       gap: 10px;
       background: #fff;
       color: #1a1a1a;
-      border: 1.5px solid rgba(26,26,26,0.15);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1.5px solid rgba(26, 26, 26, 0.15);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       font-size: 1rem;
       padding: 13px 24px;
     }
+
     .btn.google:hover {
-      box-shadow: 0 6px 18px rgba(0,0,0,0.14);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
     }
+
     .btn.google svg {
       flex-shrink: 0;
     }
@@ -49,16 +42,26 @@
       display: inline-block;
       width: 20px;
       height: 20px;
-      border: 3px solid rgba(255,255,255,0.4);
+      border: 3px solid rgba(255, 255, 255, 0.4);
       border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
-    .btn.primary .spinner { border-top-color: #fff; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn.primary .spinner {
+      border-top-color: #fff;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* hidden class */
-    .hidden { display: none !important; }
+    .hidden {
+      display: none !important;
+    }
 
     /* sign-out chip */
     .signout-chip {
@@ -68,9 +71,9 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255,255,255,0.85);
+      background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(26,26,26,0.10);
+      border: 1px solid rgba(26, 26, 26, 0.10);
       border-radius: 999px;
       padding: 6px 14px 6px 8px;
       font-size: 0.85rem;
@@ -79,9 +82,14 @@
       z-index: 30;
       transition: box-shadow 0.2s;
     }
-    .signout-chip:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+
+    .signout-chip:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
     .signout-chip img {
-      width: 26px; height: 26px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       object-fit: cover;
     }
@@ -119,23 +127,22 @@
     <button class="btn google hidden" id="btn-google">
       <!-- Google G logo -->
       <svg width="20" height="20" viewBox="0 0 48 48">
-        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.96 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-        <path fill="none" d="M0 0h48v48H0z"/>
+        <path fill="#EA4335"
+          d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+        <path fill="#4285F4"
+          d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+        <path fill="#FBBC05"
+          d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+        <path fill="#34A853"
+          d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.96 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+        <path fill="none" d="M0 0h48v48H0z" />
       </svg>
       Get Started with Google
     </button>
 
     <!-- State 3: signed in — show both action buttons -->
-    <a class="btn primary btn-pfp hidden" id="btn-chat" href="/chat.html">
-      <img id="chat-avatar" src="" alt="avatar" />
-      Open Chat Interface
-    </a>
-    <a class="btn ghost hidden" id="btn-download" href="/intern-local.exe" download="intern-local.exe">
-      Download Windows Agent
-    </a>
+    <a class="btn primary hidden" id="btn-chat" href="/chat.html">Chat Noogle</a>
+    <button class="btn ghost hidden" id="btn-download">Download Noogle</button>
   </div>
 
   <!-- Firebase SDKs via CDN -->
@@ -160,19 +167,21 @@
       measurementId: "G-82N7HEZE4F"
     };
 
-    const app  = initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
     // Elements
-    const btnLoading  = document.getElementById('btn-loading');
-    const btnGoogle   = document.getElementById('btn-google');
-    const btnChat     = document.getElementById('btn-chat');
+    const btnLoading = document.getElementById('btn-loading');
+    const btnGoogle = document.getElementById('btn-google');
+    const btnChat = document.getElementById('btn-chat');
     const btnDownload = document.getElementById('btn-download');
-    const chatAvatar  = document.getElementById('chat-avatar');
     const signoutChip = document.getElementById('signout-chip');
-    const chipAvatar  = document.getElementById('chip-avatar');
-    const chipName    = document.getElementById('chip-name');
+    const chipAvatar = document.getElementById('chip-avatar');
+    const chipName = document.getElementById('chip-name');
+
+    // Track current user for zip generation
+    let currentUser = null;
 
     function showLoggedOut() {
       btnLoading.classList.add('hidden');
@@ -183,17 +192,12 @@
     }
 
     function showLoggedIn(user) {
+      currentUser = user;
       const pfp = user.photoURL || '';
       const name = user.displayName || user.email || 'You';
 
-      // set avatars
-      if (pfp) {
-        chatAvatar.src = pfp;
-        chipAvatar.src = pfp;
-        chatAvatar.style.display = '';
-      } else {
-        chatAvatar.style.display = 'none';
-      }
+      // set chip avatar
+      if (pfp) chipAvatar.src = pfp;
       chipName.textContent = name.split(' ')[0]; // first name
 
       btnLoading.classList.add('hidden');
@@ -230,6 +234,55 @@
             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.96 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
           </svg>
           Get Started with Google`;
+      }
+    });
+
+    // ── Download Noogle — generates Noogler.zip ──────────────────────
+    btnDownload.addEventListener('click', async () => {
+      if (!currentUser) return;
+
+      const originalText = btnDownload.textContent;
+      btnDownload.disabled = true;
+      btnDownload.innerHTML = '<span class="spinner" style="border-color:rgba(0,0,0,0.15);border-top-color:#0c6e52;"></span>&nbsp; Building zip…';
+
+      try {
+        // 1. Fetch the agent exe
+        const exeRes = await fetch('/intern-local.exe');
+        if (!exeRes.ok) throw new Error(`Failed to fetch agent exe: ${exeRes.status}`);
+        const exeBlob = await exeRes.blob();
+
+        // 2. Build config.json pre-filled with user details
+        const config = {
+          device_id: "",
+          user_uid: currentUser.uid,
+          user_email: currentUser.email || "",
+          backend_url: "ws://127.0.0.1:8787" // Switch back to wss://my-app-render.com when deploying
+        };
+        const configJson = JSON.stringify(config, null, 2);
+
+        // 3. Zip them together
+        const zip = new JSZip();
+        zip.file('agent.exe', exeBlob);
+        zip.file('config.json', configJson);
+
+        const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+
+        // 4. Trigger download
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Noogler.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+      } catch (err) {
+        console.error('Zip generation failed', err);
+        alert('Download failed: ' + err.message);
+      } finally {
+        btnDownload.disabled = false;
+        btnDownload.textContent = originalText;
       }
     });
 

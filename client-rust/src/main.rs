@@ -6,7 +6,7 @@ use std::path::PathBuf;
 mod command;
 mod logger;
 mod runner;
-mod server;
+mod client;
 mod tray;
 mod windows;
 
@@ -14,6 +14,15 @@ use command::CommandItem;
 use logger::Logger;
 use runner::run_command;
 use windows::LocalBody;
+use std::env;
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+pub struct Config {
+    pub device_id: String,
+    pub user_uid: String,
+    pub user_email: String,
+    pub backend_url: String,
+}
 
 #[derive(Parser, Debug)]
 #[command(name = "intern-local")]
@@ -69,16 +78,8 @@ enum Commands {
     /// Start a simple interactive prompt
     Repl,
 
-    /// Start a WebSocket server (default if no command is provided)
-    Serve {
-        /// Bind address
-        #[arg(long, default_value = "127.0.0.1")]
-        bind: String,
-
-        /// Port to listen on
-        #[arg(long, default_value_t = 8765)]
-        port: u16,
-    },
+    /// Start a WebSocket client to connect to backend (default)
+    Connect,
 }
 
 fn main() -> Result<(), String> {
@@ -86,10 +87,7 @@ fn main() -> Result<(), String> {
     let mut logger = Logger::new(cli.log_file)?;
     let mut local_body = LocalBody::new();
 
-    match cli.command.unwrap_or(Commands::Serve {
-        bind: "127.0.0.1".to_string(),
-        port: 8765,
-    }) {
+    match cli.command.unwrap_or(Commands::Connect) {
         Commands::Exec {
             index,
             instruction,
@@ -122,9 +120,40 @@ fn main() -> Result<(), String> {
             }
         }
         Commands::Repl => repl_loop(&mut local_body, &mut logger, cli.json)?,
-        Commands::Serve { bind, port } => {
+        Commands::Connect => {
+            // Read config.json from current directory
+            let config_path = env::current_dir()
+                .unwrap_or_else(|_| PathBuf::from("."))
+                .join("config.json");
+
+            if !config_path.exists() {
+                return Err(format!(
+                    "config.json not found at {}. Please place it next to the executable.",
+                    config_path.display()
+                ));
+            }
+
+            let config_data = fs::read_to_string(&config_path)
+                .map_err(|e| format!("Failed to read config.json: {}", e))?;
+            
+            let mut config: Config = serde_json::from_str(&config_data)
+                .map_err(|e| format!("Invalid JSON in config.json: {}", e))?;
+
+            // Generate device_id if missing
+            if config.device_id.trim().is_empty() {
+                let new_id = uuid::Uuid::new_v4().to_string();
+                println!("Generated new device_id: {}", new_id);
+                config.device_id = new_id;
+
+                let updated_json = serde_json::to_string_pretty(&config)
+                    .map_err(|e| format!("Failed to serialize config: {}", e))?;
+                
+                fs::write(&config_path, updated_json)
+                    .map_err(|e| format!("Failed to save config.json: {}", e))?;
+            }
+
             let _tray = tray::init_tray()?;
-            server::serve(&bind, port, &mut local_body, &mut logger)?;
+            client::connect_and_run(config, &mut local_body, &mut logger)?;
         }
     }
 
