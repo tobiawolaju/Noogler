@@ -4,7 +4,7 @@ import { WebSocket, WebSocketServer } from "ws";
 import { handleMessage, startLiveSession, sendAudioChunk, endLiveSession } from "./agent.js";
 import { getHistory } from "./db.js";
 
-const PORT = Number(process.env.BACKEND_PORT || 8080);
+const PORT = Number(process.env.PORT || process.env.BACKEND_PORT || 8080);
 const LOG_LEVEL = (process.env.LOG_LEVEL || "info").toLowerCase();
 
 type LogLevel = "debug" | "info" | "warn" | "error";
@@ -32,6 +32,10 @@ const server = createServer((req, res) => {
 });
 
 const wss = new WebSocketServer({ server });
+
+// Increase timeouts for Cloud Run stability
+server.keepAliveTimeout = 65000; // 65 seconds
+server.headersTimeout = 66000;   // 66 seconds
 
 server.listen(PORT, "0.0.0.0", () => {
   log("info", `Backend listening on http://0.0.0.0:${PORT} (WS included)`);

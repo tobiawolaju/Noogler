@@ -30,14 +30,14 @@ if (!admin.apps.length) {
     if (serviceAccountInfo) {
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccountInfo),
-            databaseURL: "https://noogler-fc7d1-default-rtdb.firebaseio.com"
+            databaseURL: "https://noogler-490414-default-rtdb.firebaseio.com"
         });
         console.log("[DB] Firebase Admin initialized.");
     }
     else {
         console.warn("[DB] WARNING: No Firebase credentials found. Firebase Realtime DB will fail.");
         admin.initializeApp({
-            databaseURL: "https://noogler-fc7d1-default-rtdb.firebaseio.com"
+            databaseURL: "https://noogler-490414-default-rtdb.firebaseio.com"
         });
     }
 }

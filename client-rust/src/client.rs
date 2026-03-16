@@ -5,7 +5,8 @@ use crate::windows::LocalBody;
 use crate::Config;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
-use tungstenite::{connect, Message};
+use tungstenite::{client::connect_with_config, Message};
+use tungstenite::http::Request;
 use url::Url;
 
 #[derive(Debug, Deserialize)]
@@ -45,9 +46,21 @@ pub fn connect_and_run(config: Config, local_body: &mut LocalBody, logger: &mut 
 
     loop {
         println!("Connecting to {}...", config.backend_url);
-        match connect(url.as_str()) {
-            Ok((mut ws, _response)) => {
-                println!("Connected to backend!");
+        
+        let request = Request::builder()
+            .uri(url.as_str())
+            .header("User-Agent", "Noogler-Rust-Client/0.1.0")
+            .header("Host", url.host_str().unwrap_or(""))
+            .header("Connection", "Upgrade")
+            .header("Upgrade", "websocket")
+            .header("Sec-WebSocket-Key", tungstenite::handshake::client::generate_key())
+            .header("Sec-WebSocket-Version", "13")
+            .body(())
+            .map_err(|e| format!("Failed to build request: {}", e))?;
+
+        match connect_with_config(request, None, 3) {
+            Ok((mut ws, response)) => {
+                println!("Connected to backend! Status: {}", response.status());
 
                 // Send handshake
                 let handshake = AgentHandshake {
