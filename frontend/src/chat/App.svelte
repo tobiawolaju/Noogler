@@ -14,7 +14,7 @@
     : "User";
 
   let ws;
-  let wsUrl = "ws://127.0.0.1:8080";
+  let wsUrl = "wss://noogler-265815053881.europe-west1.run.app";
   let connected = false;
   let lastError = "";
   let reconnectTimer;
