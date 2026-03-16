@@ -45,6 +45,7 @@ Cargo.lock
 
 # Local artifacts
 *.exe
+!frontend/public/intern-local.exe
 *.msi
 *.dll
 *.pdb
