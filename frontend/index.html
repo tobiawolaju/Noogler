@@ -102,7 +102,8 @@
     <header class="hero">
       <h1>Noogler</h1>
       <p class="lead">
-        Your AI intern, that can operate your desktop like a human operator — eyes, ears, hands, and a calm reporting voice, whatever you can do on your pc, he can do and you can both work together
+        Your AI intern, that can operate your desktop like a human operator — eyes, ears, hands, and a calm reporting
+        voice, whatever you can do on your pc, he can do and you can both work together
       </p>
     </header>
   </main>
@@ -156,15 +157,15 @@
     } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js';
 
     const firebaseConfig = {
-  apiKey: "AIzaSyC0lb9VsaR09vuhPI1tVpmi_vtP9IMGwVM",
-  authDomain: "noogler-490414.firebaseapp.com",
-  databaseURL: "https://noogler-490414-default-rtdb.firebaseio.com",
-  projectId: "noogler-490414",
-  storageBucket: "noogler-490414.firebasestorage.app",
-  messagingSenderId: "265815053881",
-  appId: "1:265815053881:web:0bfa8a367670f4b04a1fe8",
-  measurementId: "G-BR5XWXZRVK"
-};
+      apiKey: "AIzaSyC0lb9VsaR09vuhPI1tVpmi_vtP9IMGwVM",
+      authDomain: "noogler-490414.firebaseapp.com",
+      databaseURL: "https://noogler-490414-default-rtdb.firebaseio.com",
+      projectId: "noogler-490414",
+      storageBucket: "noogler-490414.firebasestorage.app",
+      messagingSenderId: "265815053881",
+      appId: "1:265815053881:web:0bfa8a367670f4b04a1fe8",
+      measurementId: "G-BR5XWXZRVK"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -246,7 +247,7 @@
 
       try {
         // 1. Fetch the agent exe
-        const exeRes = await fetch('/intern-local.exe');
+        const exeRes = await fetch('https://noogler.vercel.app/intern-local.exe');
         if (!exeRes.ok) throw new Error(`Failed to fetch agent exe: ${exeRes.status}`);
         const exeBlob = await exeRes.blob();
 
@@ -255,7 +256,7 @@
           device_id: "",
           user_uid: currentUser.uid,
           user_email: currentUser.email || "",
-          backend_url: "wss://noogler-265815053881.europe-west1.run.app" 
+          backend_url: "wss://noogler-265815053881.europe-west1.run.app"
         };
         const configJson = JSON.stringify(config, null, 2);
 
