@@ -1,7 +1,12 @@
 # Noogler
-**PC-Embodied Autonomous AI Agent**
 
-`Noogler` is an autonomous PC-bound AI agent with real-time UI navigation, voice interaction, and shared persistent memory across text and voice sessions.
+Noogler is a closed-loop embodied AI agent that operates directly on your computer.
+
+Instead of relying only on APIs, Noogler sees the screen, reasons about what it observes, and takes actions using the mouse and keyboard—just like a human would. It can open software, navigate interfaces, fix errors, and continue working until a task is complete.
+
+If a task could be done by hiring someone to operate a PC, Noogler can do it too.
+
+From vibe coding and software development to creating 3D models in tools like Blender, working inside game engines such as Unity or Unreal Engine, generating art, running programs, or performing complex workflows across multiple applications—Noogler autonomously plans, executes, observes results, and adapts until the goal is achieved.
 
 ---
 
