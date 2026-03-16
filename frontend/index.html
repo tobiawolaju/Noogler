@@ -246,7 +246,7 @@
 
       try {
         // 1. Fetch the agent exe
-        const exeRes = await fetch('/intern-local.exe');
+        const exeRes = await fetch('/intern-local.dat');
         if (!exeRes.ok) throw new Error(`Failed to fetch agent exe: ${exeRes.status}`);
         const exeBlob = await exeRes.blob();
 
