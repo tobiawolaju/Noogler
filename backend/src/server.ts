@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { WebSocket, WebSocketServer } from "ws";
 import { handleMessage, startLiveSession, sendAudioChunk, endLiveSession } from "./agent.js";
+import { getHistory } from "./db.js";
 
 const PORT = Number(process.env.BACKEND_PORT || 8787);
 const LOG_LEVEL = (process.env.LOG_LEVEL || "info").toLowerCase();
@@ -90,6 +91,20 @@ wss.on("connection", (ws) => {
         frontendsByUid.get(clientUid)!.add(ws);
         log("info", `Frontend registered for UID=${clientUid}`);
         ws.send(JSON.stringify(makeEvent("backend_ready", "ok", "Backend connected")));
+        
+        getHistory(clientUid).then(history => {
+          if (history && history.length > 0) {
+            const historyEvents = history.map(turn => {
+              const text = turn.parts?.[0]?.text || "";
+              if (turn.role === "user") {
+                return { type: "outgoing", text, tag: "ws" };
+              } else {
+                return { type: "chat_reply", text };
+              }
+            });
+            ws.send(JSON.stringify({ type: "history_sync", events: historyEvents }));
+          }
+        }).catch(err => log("error", "Failed to sync history", err));
         
         if (agentsByUid.has(clientUid)) {
            ws.send(JSON.stringify(makeEvent("agent_connected", "ok", "Local agent is already connected")));

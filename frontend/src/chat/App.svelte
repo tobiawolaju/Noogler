@@ -130,7 +130,11 @@
     ws.addEventListener("message", (event) => {
       try {
         const data = JSON.parse(event.data);
-        events = [...events, data].slice(-200);
+        if (data.type === "history_sync") {
+          events = [...data.events, ...events].slice(-200);
+        } else {
+          events = [...events, data].slice(-200);
+        }
         tickScroll();
       } catch (err) {
         events = [...events, { type: "raw", payload: event.data }].slice(-200);
