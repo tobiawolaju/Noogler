@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { WebSocket, WebSocketServer } from "ws";
-import { handleMessage } from "./agent.js";
-import { startLiveSession, sendAudioChunk, endLiveSession } from "./live-proxy.js";
+import { handleMessage, startLiveSession, sendAudioChunk, endLiveSession } from "./agent.js";
 
 const PORT = Number(process.env.BACKEND_PORT || 8787);
 const LOG_LEVEL = (process.env.LOG_LEVEL || "info").toLowerCase();
