@@ -17,7 +17,7 @@ backend/node_modules
 *.env
 frontend/.env
 backend/.env
-frontend/firebase.js
+#rontend/firebase.js
 ServiceAccountsJson.json
 backend/ServiceAccountsJson.json
 config.json
