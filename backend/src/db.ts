@@ -12,10 +12,21 @@ const serviceAccountPath = path.resolve(__dirname, "../../ServiceAccountsJson.js
 const localServiceAccountPath = path.resolve(__dirname, "../ServiceAccountsJson.json");
 
 let serviceAccountInfo: any = null;
-if (fs.existsSync(localServiceAccountPath)) {
+
+// Try loading from environment variables first
+if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+  serviceAccountInfo = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
+  };
+  console.log("[DB] Using Firebase config from environment variables.");
+} else if (fs.existsSync(localServiceAccountPath)) {
   serviceAccountInfo = JSON.parse(fs.readFileSync(localServiceAccountPath, "utf-8"));
+  console.log("[DB] Using Firebase config from local ServiceAccountsJson.json.");
 } else if (fs.existsSync(serviceAccountPath)) {
   serviceAccountInfo = JSON.parse(fs.readFileSync(serviceAccountPath, "utf-8"));
+  console.log("[DB] Using Firebase config from sibling ServiceAccountsJson.json.");
 }
 
 if (!admin.apps.length) {
@@ -24,9 +35,9 @@ if (!admin.apps.length) {
       credential: admin.credential.cert(serviceAccountInfo),
       databaseURL: "https://noogler-fc7d1-default-rtdb.firebaseio.com"
     });
-    console.log("[DB] Firebase Admin initialized with service account.");
+    console.log("[DB] Firebase Admin initialized.");
   } else {
-    console.warn("[DB] WARNING: ServiceAccountsJson.json not found. Firebase Realtime DB will fail.");
+    console.warn("[DB] WARNING: No Firebase credentials found. Firebase Realtime DB will fail.");
     admin.initializeApp({
       databaseURL: "https://noogler-fc7d1-default-rtdb.firebaseio.com"
     });
