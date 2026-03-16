@@ -1,22 +1,22 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyDrxB-c8XHe7gMofljuenXg0e8A7mKeoiM",
-    authDomain: "noogler-fc7d1.firebaseapp.com",
-    databaseURL: "https://noogler-fc7d1-default-rtdb.firebaseio.com",
-    projectId: "noogler-fc7d1",
-    storageBucket: "noogler-fc7d1.firebasestorage.app",
-    messagingSenderId: "644134637733",
-    appId: "1:644134637733:web:432406cd608548fd883d4c",
-    measurementId: "G-82N7HEZE4F"
+  apiKey: "AIzaSyC0lb9VsaR09vuhPI1tVpmi_vtP9IMGwVM",
+  authDomain: "noogler-490414.firebaseapp.com",
+  databaseURL: "https://noogler-490414-default-rtdb.firebaseio.com",
+  projectId: "noogler-490414",
+  storageBucket: "noogler-490414.firebasestorage.app",
+  messagingSenderId: "265815053881",
+  appId: "1:265815053881:web:0bfa8a367670f4b04a1fe8",
+  measurementId: "G-BR5XWXZRVK"
 };
 
 // Initialize Firebase
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
