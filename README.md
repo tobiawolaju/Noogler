@@ -1,15 +1,15 @@
-# The Intern
+# Noogler
 **PC-Embodied Autonomous AI Agent**
 
-`The Intern` is an autonomous PC-bound AI agent with real-time UI navigation, voice interaction, and shared persistent memory across text and voice sessions.
+`Noogler` is an autonomous PC-bound AI agent with real-time UI navigation, voice interaction, and shared persistent memory across text and voice sessions.
 
 ---
 
 # Overview
 
-**The Intern** is an AI powered coworker that lives inside your computer. It acts as your **eyes, ears, and hands**, observing your desktop through screen capture and interacting with it as a human would.
+**Noogler** is an AI powered coworker that lives inside your computer. It acts as your **eyes, ears, and hands**, observing your desktop through screen capture and interacting with it as a human would.
 
-Instead of just interacting with APIs, **The Intern** operates desktop applications directly through their coordinate-based interfaces, making it capable of handling workflows in browsers, IDEs, Slack, Excel, or any other software.
+Instead of just interacting with APIs, **Noogler** operates desktop applications directly through their coordinate-based interfaces, making it capable of handling workflows in browsers, IDEs, Slack, Excel, or any other software.
 
 ### The Brain
 Powered by **Google Gemini 2.0 (Multimodal & Live API)**, it has the ability to see frames in real-time and maintain a natural, low-latency voice conversation.

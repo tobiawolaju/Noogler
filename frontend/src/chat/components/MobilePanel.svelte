@@ -19,7 +19,7 @@
       </button>
 
       <div class="panel-header">
-        <h1>Intern Dashboard</h1>
+        <h1>Noogler Dashboard</h1>
         <p style="opacity: 0.6; font-size: 0.9rem;">Configure your connection and monitor status</p>
       </div>
 
