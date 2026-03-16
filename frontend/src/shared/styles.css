@@ -618,7 +618,7 @@ textarea {
 }
 
 .wa-bubble-wrap.from-me .wa-bubble-tag {
-  background: #22cf70;
+  background: #beffa6;
   border: none;
   color: #0b141a;
   text-align: right;
@@ -627,9 +627,9 @@ textarea {
 }
 
 .wa-bubble-wrap.from-body .wa-bubble-tag {
-  background: #3ba8df;
+  background: #00634d;
   border: none;
-  color: #000000;
+  color: #ffffff;
   font-size: large;
 }
 
@@ -644,7 +644,7 @@ textarea {
 
 .wa-bubble.from-me {
   margin: none;
-  background: #31ee86;
+  background: #d5ffc4;
   color: #000000;
   align-self: flex-end;
   margin-bottom: 8px;
@@ -652,8 +652,8 @@ textarea {
 
 .wa-bubble.from-body {
   margin: none;
-  background: #51c5ff;
-  color: #000000;
+  background: #079c7c;
+  color: #ffffff;
 }
 
 

@@ -1,5 +1,7 @@
 import "dotenv/config";
 import { WebSocket, WebSocketServer } from "ws";
+import { handleMessage } from "./agent.js";
+import { startLiveSession, sendAudioChunk, endLiveSession } from "./live-proxy.js";
 
 const PORT = Number(process.env.BACKEND_PORT || 8787);
 const LOG_LEVEL = (process.env.LOG_LEVEL || "info").toLowerCase();
@@ -107,40 +109,72 @@ wss.on("connection", (ws) => {
 
     if (isAgent) {
       log("debug", `Agent -> Backend for UID=${clientUid}`, msg);
-      broadcastToFrontends(clientUid, msg);
+      // Only broadcast screenshots or strict errors to the frontend UI
       if (isScreenshotEvent(msg)) {
-        broadcastToFrontends(clientUid, makeEvent("done", "ok", "Done. Screenshot attached."));
+        broadcastToFrontends(clientUid, msg);
+        const event = makeEvent("chat_reply", "ok", "Screenshot attached.");
+        broadcastToFrontends(clientUid, { ...event, type: "chat_reply", text: "Screenshot attached." });
+      } else if (msg.status === "error") {
+        const errText = msg.error || msg.detail || "Local agent encountered an error.";
+        const event = makeEvent("chat_reply", "error", errText);
+        broadcastToFrontends(clientUid, { ...event, type: "chat_reply", text: `Error: ${errText}` });
       }
       return;
     }
 
     if (isFrontend) {
       const agentWs = agentsByUid.get(clientUid);
-      if (!agentWs || agentWs.readyState !== WebSocket.OPEN) {
-        ws.send(JSON.stringify(makeEvent("agent_offline", "error", "Local agent not connected")));
+
+      if (msg.type === "start_call") {
+        log("info", `Frontend -> LiveProxy started for UID=${clientUid}`, {});
+        startLiveSession(clientUid, ws as any);
+        return;
+      }
+
+      if (msg.type === "end_call") {
+        log("info", `Frontend -> LiveProxy ended for UID=${clientUid}`, {});
+        endLiveSession(clientUid);
+        return;
+      }
+
+      if (msg.type === "audio_chunk") {
+        sendAudioChunk(clientUid, msg.data);
         return;
       }
 
       if (msg.type === "commands" && Array.isArray(msg.commands)) {
+        if (!agentWs || agentWs.readyState !== WebSocket.OPEN) {
+          ws.send(JSON.stringify(makeEvent("agent_offline", "error", "Local agent not connected")));
+          return;
+        }
         log("info", `Frontend -> Agent for UID=${clientUid} (batch)`, { count: msg.commands.length });
         sendToAgent(agentWs, msg.commands);
         ws.send(JSON.stringify(makeEvent("commands_sent", "ok", `Sent ${msg.commands.length} commands to agent`)));
         return;
       }
 
-      if (msg.instruction) {
-        const command = { index: 0, instruction: msg.instruction, tag: msg.tag || "ws" };
-        log("info", `Frontend -> Agent for UID=${clientUid} (single)`, command);
-        sendToAgent(agentWs, command);
-        ws.send(JSON.stringify(makeEvent("commands_sent", "ok", `Sent command: ${msg.instruction}`)));
-        return;
-      }
+      const input = msg.text || msg.instruction;
+      if (input) {
+        log("info", `Frontend -> AI for UID=${clientUid}`, { input });
+        handleMessage(clientUid, input).then(response => {
+           if (response.type === "conversation") {
+              const event = makeEvent("chat_reply", "ok", response.text);
+              ws.send(JSON.stringify({ ...event, type: "chat_reply", text: response.text }));
+           } else if (response.type === "commands") {
+              if (!agentWs || agentWs.readyState !== WebSocket.OPEN) {
+                 ws.send(JSON.stringify(makeEvent("agent_offline", "error", "AI generated commands, but local agent is not connected!")));
+                 return;
+              }
+              sendToAgent(agentWs, response.commands);
+              // Send the natural language reply accompanying the internal commands
+              const event = makeEvent("chat_reply", "ok", response.text);
+              ws.send(JSON.stringify({ ...event, type: "chat_reply", text: response.text }));
+           }
+        }).catch(err => {
+           log("error", "Agent error", err);
+           ws.send(JSON.stringify(makeEvent("agent_error", "error", "AI failed to process instruction")));
+        });
 
-      if (msg.text) {
-        const command = { index: 0, instruction: msg.text, tag: msg.tag || "ws" };
-        log("info", `Frontend -> Agent for UID=${clientUid} (raw text)`, { text: msg.text });
-        sendToAgent(agentWs, command);
-        ws.send(JSON.stringify(makeEvent("commands_sent", "ok", `Forwarded: ${msg.text}`)));
         return;
       }
     }

@@ -9,7 +9,7 @@ if (!GEMINI_API_KEY) {
 }
 
 const body = {
-  contents: [{ role: "user", parts: [{ text: "Say hello in one short sentence." }] }],
+  contents: [{ role: "user", parts: [{ text: "What is the capital of France?" }] }],
   generationConfig: { temperature: 0.2, maxOutputTokens: 64 }
 };
 

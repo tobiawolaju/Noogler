@@ -1,6 +1,7 @@
 <script>
   export let events = [];
   export let feedEl;
+  export let userName = "User";
 </script>
 
 <section class="wa-feed" bind:this={feedEl}>
@@ -14,7 +15,7 @@
       <div class="wa-bubble-wrap {event.type === 'outgoing' ? 'from-me' : 'from-body'}">
         {#if i === 0 || events[i - 1].type !== event.type}
           <div class="wa-bubble-tag">
-            {event.type === "outgoing" ? "User" : "Agent"}
+            {event.type === "outgoing" ? userName : "Agent"}
           </div>
         {/if}
         <div
@@ -23,6 +24,8 @@
           {#if event.type === "outgoing"}
             <strong>{event.text ?? event.instruction}</strong>
             <small>Tag: {event.tag}</small>
+          {:else if event.type === "chat_reply"}
+            <span style="font-size: 1.1em; white-space: pre-wrap;">{event.text}</span>
           {:else if event.type === "pong"}
             <strong>Pong</strong>
             <small>ts_ms: {event.ts_ms}</small>

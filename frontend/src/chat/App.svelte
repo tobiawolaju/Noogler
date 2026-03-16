@@ -9,6 +9,9 @@
   import MobilePanel from "./components/MobilePanel.svelte";
 
   let currentUser = null;
+  $: userFirstName = currentUser?.displayName
+    ? currentUser.displayName.split(" ")[0]
+    : "User";
 
   let ws;
   let wsUrl = "ws://127.0.0.1:8787";
@@ -259,7 +262,7 @@
       onHeaderClick={handleHeaderClick}
     />
 
-    <Feed {events} bind:feedEl />
+    <Feed {events} bind:feedEl userName={userFirstName} />
 
     <FooterInput
       bind:instruction
@@ -272,6 +275,7 @@
   </main>
 
   <OngoingCallOverlay
+    {ws}
     visible={overlayVisible}
     elapsedLabel={callDurationLabel}
     onClose={handleOverlayClose}
