@@ -9,8 +9,14 @@
 
   <form class="wa-input" on:submit|preventDefault={onSubmit}>
     <input
+      id="noogler-input"
+      name="noogler-input"
       bind:value={instruction}
-      placeholder="Type a command... (e.g. move 400 400)"
+      placeholder="Message Noogler..."
+      autocomplete="off"
+      autocorrect="off"
+      autocapitalize="off"
+      spellcheck="false"
     />
     <button type="submit" class="wa-send" disabled={!connected} aria-label="Send">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
