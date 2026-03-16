@@ -14,7 +14,7 @@
     : "User";
 
   let ws;
-  let wsUrl = "ws://127.0.0.1:8787";
+  let wsUrl = "ws://127.0.0.1:8080";
   let connected = false;
   let lastError = "";
   let reconnectTimer;
