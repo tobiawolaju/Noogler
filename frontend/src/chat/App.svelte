@@ -33,6 +33,7 @@
   let overlayVisible = false;
   let callStartTime = 0;
   let elapsedMs = 0;
+  let micVolume = 0;
   let callTimer;
 
   const updateElapsed = () => {
@@ -207,27 +208,7 @@
   };
 
 
-  const commandTemplates = [
-    "move <x> <y>",
-    "click <x> <y>",
-    "doubleclick <x> <y>",
-    "mousedown <x> <y>",
-    "mouseup <x> <y>",
-    "drag <x1> <y1> <x2> <y2>",
-    "scroll <delta>",
-    "type: <text>",
-    "key: <NAME>",
-    "hotkey: CTRL+SHIFT+S",
-    "wait <ms>",
-    "screenshot <path>",
-    "noop"
-  ];
 
-  $: showSuggestions = instruction.trim().startsWith("/");
-  $: suggestionQuery = showSuggestions ? instruction.trim().slice(1).toLowerCase() : "";
-  $: filteredTemplates = showSuggestions
-    ? commandTemplates.filter((cmd) => cmd.toLowerCase().includes(suggestionQuery))
-    : [];
   const openPanel = () => {
     showMobilePanel = true;
   };
@@ -261,6 +242,7 @@
     <HeaderBar
       {statusLine}
       {callActive}
+      {micVolume}
       onOpenPanel={openPanel}
       onToggleCall={handleCallButtonClick}
       onHeaderClick={handleHeaderClick}
@@ -271,15 +253,13 @@
     <FooterInput
       bind:instruction
       {connected}
-      {showSuggestions}
-      {filteredTemplates}
-      onSelectTemplate={(cmd) => (instruction = cmd)}
       onSubmit={sendCommand}
     />
   </main>
 
   <OngoingCallOverlay
     {ws}
+    bind:micVolume
     visible={overlayVisible}
     elapsedLabel={callDurationLabel}
     onClose={handleOverlayClose}

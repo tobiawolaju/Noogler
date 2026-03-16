@@ -17,7 +17,7 @@
       <button type="button" class="wa-panel-close" on:click={onClose} aria-label="Close panel">
         ×
       </button>
-    <h1>Hello, I am your inten and this is the intern dashboard</h1>
+    <h1>Hello, I am your intern and this is the intern dashboard</h1>
 
 
     </div>

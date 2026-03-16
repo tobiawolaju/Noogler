@@ -1,36 +1,11 @@
 <script>
   export let instruction = "";
   export let connected = false;
-  export let showSuggestions = false;
-  export let filteredTemplates = [];
-  export let onSelectTemplate = () => {};
   export let onSubmit = () => {};
 </script>
 
 <div class="wa-footer">
-  {#if showSuggestions}
-    <div class="wa-suggest">
-      <div class="wa-suggest-header">
-        <span>Command templates</span>
-        <small>Type to filter, click to insert</small>
-      </div>
-      <div class="wa-suggest-list">
-        {#if filteredTemplates.length === 0}
-          <div class="wa-suggest-empty">No matches</div>
-        {:else}
-          {#each filteredTemplates as cmd}
-            <button
-              class="wa-suggest-item"
-              type="button"
-              on:click={() => onSelectTemplate(cmd)}
-            >
-              {cmd}
-            </button>
-          {/each}
-        {/if}
-      </div>
-    </div>
-  {/if}
+
 
   <form class="wa-input" on:submit|preventDefault={onSubmit}>
     <input

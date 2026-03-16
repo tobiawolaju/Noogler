@@ -11,7 +11,7 @@
   let workletNode;
   let analyserNode;
   let animationFrameId;
-  let micVolume = 0;
+  export let micVolume = 0;
   let nextPlayTime = 0;
   let wsListenerAdded = false;
 
@@ -148,8 +148,6 @@
 
 {#if visible}
   <div class="call-overlay" role="dialog" aria-label="Ongoing call">
-    <div class="call-overlay-brand">
-    </div>
     <div class="call-overlay-header">
       <h2>Noogler</h2>
       <p class="call-overlay-status">ongoing call - {elapsedLabel}</p>
@@ -157,14 +155,14 @@
     <div class="call-overlay-content" style="display: flex; justify-content: center; align-items: center; height: 100%;">
       <div 
         class="mic-indicator" 
-        style="transform: scale({1 + micVolume * 0.8}); opacity: {0.3 + micVolume * 0.7}; width: 120px; height: 120px; border-radius: 50%; background-color: white; transition: transform 0.05s linear, opacity 0.05s linear; box-shadow: 0 0 30px rgba(255,255,255,0.6);"
+        style="transform: scale({1 + micVolume * 0.8}); opacity: {0.3 + micVolume * 0.7}; width: 120px; height: 120px; border-radius: 50%; background-color: var(--accent); transition: transform 0.05s linear, opacity 0.05s linear;"
       ></div>
     </div>
     <div class="call-overlay-actions">
       <button type="button" class="call-overlay-action" aria-label="Close overlay" on:click={onClose}>
         <span class="material-symbols-outlined">close</span>
       </button>
-      <button type="button" class="call-overlay-action call-overlay-end" aria-label="End call" on:click={onEnd}>
+      <button type="button" class="call-overlay-action call-overlay-end" aria-label="End call" on:click={onEnd} style="background-color: #ff4d4d; color: white;">
         <span class="material-symbols-outlined">call_end</span>
       </button>
     </div>
