@@ -481,10 +481,10 @@ textarea {
 .wa-info-icon {
   font-size: 16px !important;
   color: var(--accent);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 50%;
-  padding: 1px;
-  opacity: 0.8;
+  padding: 0;
+  opacity: 0.5;
 }
 
 .wa-header-actions {
@@ -913,20 +913,29 @@ textarea {
 .wa-panel {
   width: 100%;
   height: 100%;
-  background: var(--accent);
-  color: #ffffff;
+  background: var(--accent-soft);
+  color: #1a1a1a;
   border-radius: 0;
   padding: 24px;
-  display: grid;
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   position: relative;
   box-shadow: none;
+  overflow-y: auto;
 }
 
-.wa-panel .wa-settings input {
-  background: #0b141a;
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #e9edef;
+.wa-panel h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1a1a1a;
+}
+
+.wa-panel h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1a1a1a;
+  opacity: 0.8;
 }
 
 .wa-panel-close {
@@ -937,11 +946,48 @@ textarea {
   height: 34px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: #e9edef;
+  background: rgba(0, 0, 0, 0.05);
+  color: #1a1a1a;
   font-size: 20px;
   cursor: pointer;
 }
+
+.wa-settings-group {
+  display: grid;
+  gap: 8px;
+}
+
+.wa-settings-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.wa-settings-group input {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: white;
+  color: #1a1a1a;
+  font-size: 0.95rem;
+}
+
+.wa-status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.wa-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.wa-status-dot.online { background: #25d366; }
+.wa-status-dot.offline { background: #ff4d4d; }
+
 
 .panel-brand .wa-avatar {
   cursor: default;

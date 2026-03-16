@@ -16,14 +16,12 @@
         on:click|stopPropagation={onOpenPanel}
         aria-label="Open agent details"
       >
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div style="display: flex; flex-direction: column;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <h2>Noogler</h2>
-              <span class="material-symbols-outlined wa-info-icon">info</span>
-            </div>
-            <p class="wa-status-line">{statusLine}</p>
+        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span class="material-symbols-outlined wa-info-icon">info</span>
+            <h2>Noogler</h2>
           </div>
+          <p class="wa-status-line">{statusLine}</p>
         </div>
       </button>
     </div>
