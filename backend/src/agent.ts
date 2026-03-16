@@ -1,5 +1,6 @@
 import "dotenv/config";
 import WebSocket from "ws";
+import { getHistory, appendHistory } from "./db.js";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
@@ -13,8 +14,7 @@ export type AgentResponse =
   | { type: "conversation"; text: string }
   | { type: "commands"; text: string; commands: any[] };
 
-// Store history per user_uid: { role: "user" | "model", parts: [{ text: string }] }[]
-const historyByUid = new Map<string, any[]>();
+// Maintain active Gemini connections per user UID
 // Maintain active Gemini connections per user UID
 const activeSessions = new Map<string, WebSocket>();
 
@@ -52,18 +52,26 @@ You are currently on a live voice call with the user.
 Converse with them naturally, keep answers concise and conversational, as you are speaking out loud.`;
 
 export async function handleMessage(uid: string, text: string): Promise<AgentResponse> {
-  if (!historyByUid.has(uid)) {
-    historyByUid.set(uid, []);
+  // Check if there is an active Live session
+  const liveWs = activeSessions.get(uid);
+  if (liveWs && liveWs.readyState === WebSocket.OPEN) {
+    const realtimeClientContent = {
+      clientContent: {
+        turns: [{ role: "user", parts: [{ text }] }],
+        turnComplete: true
+      }
+    };
+    liveWs.send(JSON.stringify(realtimeClientContent));
+    await appendHistory(uid, "user", text);
+    // Return empty response so it doesn't duplicate in UI
+    return { type: "conversation", text: "" };
   }
-  const history = historyByUid.get(uid)!;
+
+  const history = await getHistory(uid);
 
   // Add the new user message
   history.push({ role: "user", parts: [{ text }] });
-
-  // Keep history manageable (last 20 messages)
-  if (history.length > 20) {
-    history.splice(0, history.length - 20);
-  }
+  await appendHistory(uid, "user", text);
 
   const url = `https://${HOST}/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
   
@@ -94,7 +102,7 @@ export async function handleMessage(uid: string, text: string): Promise<AgentRes
     }
 
     // Add model reply to history
-    history.push({ role: "model", parts: [{ text: replyText }] });
+    await appendHistory(uid, "model", replyText);
 
     // Detect if the response is a JSON object of commands
     if (replyText.startsWith("{") && replyText.endsWith("}")) {
@@ -117,7 +125,7 @@ export async function handleMessage(uid: string, text: string): Promise<AgentRes
   }
 }
 
-export function startLiveSession(uid: string, frontendWs: WebSocket) {
+export async function startLiveSession(uid: string, frontendWs: WebSocket) {
   if (activeSessions.has(uid)) {
     endLiveSession(uid);
   }
@@ -126,6 +134,8 @@ export function startLiveSession(uid: string, frontendWs: WebSocket) {
 
   const key = process.env.GEMINI_API_KEY || GEMINI_API_KEY;
   const wsUrl = `wss://${HOST}/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${key}`;
+  
+  const historyTurns = await getHistory(uid);
   const geminiWs = new WebSocket(wsUrl);
 
   geminiWs.on("open", () => {
@@ -144,23 +154,46 @@ export function startLiveSession(uid: string, frontendWs: WebSocket) {
       }
     };
     geminiWs.send(JSON.stringify(setupMsg));
+    
+    // Immediately send history
+    if (historyTurns.length > 0) {
+      geminiWs.send(JSON.stringify({
+        clientContent: {
+          turns: historyTurns,
+          turnComplete: true
+        }
+      }));
+    }
   });
+
+  let voiceTranscriptBuffer = "";
 
   geminiWs.on("message", (data) => {
     try {
       const response = JSON.parse(data.toString());
 
-      if (response.serverContent && response.serverContent.modelTurn) {
-        const parts = response.serverContent.modelTurn.parts;
-        for (const part of parts) {
-          if (part.inlineData && part.inlineData.mimeType.startsWith("audio/pcm")) {
-            // Forward audio to frontend
-            if (frontendWs.readyState === WebSocket.OPEN) {
-              frontendWs.send(JSON.stringify({
-                type: "audio_reply",
-                data: part.inlineData.data
-              }));
+      if (response.serverContent) {
+        if (response.serverContent.modelTurn) {
+          const parts = response.serverContent.modelTurn.parts;
+          for (const part of parts) {
+            if (part.inlineData && part.inlineData.mimeType.startsWith("audio/pcm")) {
+              // Forward audio to frontend
+              if (frontendWs.readyState === WebSocket.OPEN) {
+                frontendWs.send(JSON.stringify({
+                  type: "audio_reply",
+                  data: part.inlineData.data
+                }));
+              }
+            } else if (part.text) {
+              voiceTranscriptBuffer += part.text;
             }
+          }
+        }
+        
+        if (response.serverContent.turnComplete) {
+          if (voiceTranscriptBuffer.trim().length > 0) {
+            appendHistory(uid, "model", voiceTranscriptBuffer.trim());
+            voiceTranscriptBuffer = ""; // reset for next turn
           }
         }
       }

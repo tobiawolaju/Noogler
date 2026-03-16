@@ -157,8 +157,10 @@ wss.on("connection", (ws) => {
         log("info", `Frontend -> AI for UID=${clientUid}`, { input });
         handleMessage(clientUid, input).then(response => {
            if (response.type === "conversation") {
-              const event = makeEvent("chat_reply", "ok", response.text);
-              ws.send(JSON.stringify({ ...event, type: "chat_reply", text: response.text }));
+              if (response.text.trim() !== "") {
+                const event = makeEvent("chat_reply", "ok", response.text);
+                ws.send(JSON.stringify({ ...event, type: "chat_reply", text: response.text }));
+              }
            } else if (response.type === "commands") {
               if (!agentWs || agentWs.readyState !== WebSocket.OPEN) {
                  ws.send(JSON.stringify(makeEvent("agent_offline", "error", "AI generated commands, but local agent is not connected!")));
