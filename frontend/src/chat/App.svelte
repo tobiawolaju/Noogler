@@ -26,6 +26,7 @@
   let index = 1;
 
   let events = [];
+  let replyingTo = null;
   let feedEl;
   let showMobilePanel = false;
 
@@ -167,12 +168,17 @@
       tag: tag.trim() || "ws"
     };
 
+    if (replyingTo) {
+      payload.reply_to = replyingTo.text || replyingTo.instruction || "Image/Command";
+    }
+
     events = [
       ...events,
       {
         type: "outgoing",
         text: payload.text,
         tag: payload.tag,
+        reply_to: payload.reply_to,
         ts_ms: Date.now()
       }
     ].slice(-200);
@@ -181,6 +187,7 @@
     ws.send(JSON.stringify(payload));
     index += 1;
     instruction = "";
+    replyingTo = null;
   };
 
   const sendPing = () => {
@@ -248,12 +255,19 @@
       onHeaderClick={handleHeaderClick}
     />
 
-    <Feed {events} bind:feedEl userName={userFirstName} />
+    <Feed 
+      {events} 
+      bind:feedEl 
+      userName={userFirstName} 
+      onReply={(ev) => replyingTo = ev} 
+    />
 
     <FooterInput
       bind:instruction
       {connected}
+      {replyingTo}
       onSubmit={sendCommand}
+      onCancelReply={() => replyingTo = null}
     />
   </main>
 

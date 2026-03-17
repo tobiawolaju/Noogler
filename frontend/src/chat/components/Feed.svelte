@@ -2,6 +2,7 @@
   export let events = [];
   export let feedEl;
   export let userName = "User";
+  export let onReply = () => {};
 </script>
 
 <section class="wa-feed" bind:this={feedEl}>
@@ -18,35 +19,50 @@
             {event.type === "outgoing" ? userName : "Agent"}
           </div>
         {/if}
-        <div
-          class="wa-bubble {event.type === 'outgoing' ? 'from-me' : 'from-body'} {event.status === 'error' ? 'error' : 'ok'}"
-        >
-          {#if event.type === "outgoing"}
-            <strong>{event.text ?? event.instruction}</strong>
-            <small>Tag: {event.tag}</small>
-          {:else if event.type === "chat_reply"}
-            <span style="font-size: 1.1em; white-space: pre-wrap;">{event.text}</span>
-          {:else if event.type === "pong"}
-            <strong>Pong</strong>
-            <small>ts_ms: {event.ts_ms}</small>
-          {:else if event.type === "error"}
-            <strong>Error</strong>
-            <small>{event.error}</small>
-          {:else if event.type === "raw"}
-            <strong>Raw</strong>
-            <small>{event.payload}</small>
-          {:else}
-            <strong>{event.instruction}</strong>
-            <small>Status: {event.status} - Tag: {event.tag}</small>
-            <small>Detail: {event.detail}</small>
-            {#if event.screenshot_path}
-              <small>Path: {event.screenshot_path}</small>
+        
+        <div class="wa-bubble-container">
+          <div
+            class="wa-bubble {event.type === 'outgoing' ? 'from-me' : 'from-body'} {event.status === 'error' ? 'error' : 'ok'}"
+          >
+            {#if event.reply_to}
+              <div class="wa-replied-msg">
+                {event.reply_to}
+              </div>
             {/if}
-            {#if event.screenshot_data_url}
-              <img class="wa-bubble-image" src={event.screenshot_data_url} alt="Screenshot" loading="lazy" />
+
+            {#if event.type === "outgoing"}
+              <strong>{event.text ?? event.instruction}</strong>
+              <small>Tag: {event.tag}</small>
+            {:else if event.type === "chat_reply"}
+              <span style="font-size: 1.1em; white-space: pre-wrap;">{event.text}</span>
+            {:else if event.type === "pong"}
+              <strong>Pong</strong>
+              <small>ts_ms: {event.ts_ms}</small>
+            {:else if event.type === "error"}
+              <strong>Error</strong>
+              <small>{event.error}</small>
+            {:else if event.type === "raw"}
+              <strong>Raw</strong>
+              <small>{event.payload}</small>
+            {:else}
+              <strong>{event.instruction}</strong>
+              <small>Status: {event.status} - Tag: {event.tag}</small>
+              <small>Detail: {event.detail}</small>
+              {#if event.screenshot_path}
+                <small>Path: {event.screenshot_path}</small>
+              {/if}
+              {#if event.screenshot_data_url}
+                <img class="wa-bubble-image" src={event.screenshot_data_url} alt="Screenshot" loading="lazy" />
+              {/if}
+              <small>Duration: {event.duration_ms} ms</small>
             {/if}
-            <small>Duration: {event.duration_ms} ms</small>
-          {/if}
+          </div>
+
+          <div class="wa-bubble-actions">
+            <button class="wa-action-btn" title="Reply" on:click={() => onReply(event)}>
+              <span class="material-symbols-outlined">reply</span>
+            </button>
+          </div>
         </div>
       </div>
     {/each}

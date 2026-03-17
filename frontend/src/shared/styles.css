@@ -634,14 +634,15 @@ textarea {
 }
 
 .wa-bubble-wrap.from-me {
-  margin-left: auto;
-  align-items: flex-end;
-  text-align: right;
+  margin-right: auto;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .wa-bubble-wrap.from-body {
-  margin-right: auto;
-  align-items: flex-start;
+  margin-left: auto;
+  align-items: flex-end;
+  text-align: right;
 }
 
 .wa-bubble-wrap.from-me .wa-bubble-tag {
@@ -671,9 +672,9 @@ textarea {
 }
 
 .wa-bubble.from-me {
-  background: var(--accent-soft);
+  background: #f0f0f0;
   color: #1a1a1a;
-  align-self: flex-end;
+  align-self: flex-start;
   margin-bottom: 8px;
   margin-top: 8px;
 }
@@ -681,6 +682,7 @@ textarea {
 .wa-bubble.from-body {
   background: var(--accent);
   color: #ffffff;
+  align-self: flex-end;
 }
 
 
@@ -706,6 +708,96 @@ textarea {
   margin: 0;
   line-height: 1.2;
   display: block;
+}
+
+/* Reply Styles */
+.wa-reply-preview {
+  background: #f8f9fa;
+  border-left: 4px solid var(--accent);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.wa-reply-content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wa-reply-cancel {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  color: var(--ink-soft);
+}
+
+.wa-replied-msg {
+  background: rgba(0, 0, 0, 0.05);
+  border-left: 3px solid rgba(0, 0, 0, 0.2);
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  max-width: 100%;
+}
+
+.from-body .wa-replied-msg {
+  background: rgba(255, 255, 255, 0.1);
+  border-left-color: rgba(255, 255, 255, 0.4);
+}
+
+.wa-bubble-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.wa-bubble-actions {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.from-me .wa-bubble-actions {
+  right: -50px;
+}
+
+.from-body .wa-bubble-actions {
+  left: -50px;
+}
+
+.wa-bubble-wrap:hover .wa-bubble-actions {
+  display: flex;
+}
+
+.wa-action-btn {
+  background: #f0f0f0;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--ink-soft);
+  transition: background 0.2s;
+}
+
+.wa-action-btn:hover {
+  background: #e0e0e0;
 }
 
 .wa-input {

@@ -2,10 +2,22 @@
   export let instruction = "";
   export let connected = false;
   export let onSubmit = () => {};
+  export let replyingTo = null;
+  export let onCancelReply = () => {};
 </script>
 
 <div class="wa-footer">
-
+  {#if replyingTo}
+    <div class="wa-reply-preview">
+      <div class="wa-reply-content">
+        <strong>Replying to {replyingTo.type === "outgoing" ? "yourself" : "Agent"}</strong>
+        <p>{replyingTo.text || replyingTo.instruction || "Image/Command"}</p>
+      </div>
+      <button class="wa-reply-cancel" on:click={onCancelReply}>
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  {/if}
 
   <form class="wa-input" on:submit|preventDefault={onSubmit}>
     <input
