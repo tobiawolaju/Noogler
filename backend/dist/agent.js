@@ -118,7 +118,7 @@ export async function startLiveSession(uid, frontendWs) {
         // Send setup
         const setupMsg = {
             setup: {
-                model: "models/gemini-live-2.5-flash-native-audio",
+                model: "models/gemini-2.5-flash-native-audio-preview-12-2025",
                 systemInstruction: {
                     parts: [{ text: VOICE_SYSTEM_PROMPT }]
                 },
