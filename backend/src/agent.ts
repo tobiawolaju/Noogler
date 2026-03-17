@@ -144,7 +144,7 @@ export async function startLiveSession(uid: string, frontendWs: WebSocket) {
     // Send setup
     const setupMsg = {
       setup: {
-        model: "models/gemini-2.5-flash-native-audio-preview-12-2025",
+        model: "models/gemini-2.0-flash-exp",
         systemInstruction: {
           parts: [{ text: VOICE_SYSTEM_PROMPT }]
         },
@@ -154,16 +154,6 @@ export async function startLiveSession(uid: string, frontendWs: WebSocket) {
       }
     };
     geminiWs.send(JSON.stringify(setupMsg));
-
-    // Immediately send history
-    if (historyTurns.length > 0) {
-      geminiWs.send(JSON.stringify({
-        clientContent: {
-          turns: historyTurns,
-          turnComplete: true
-        }
-      }));
-    }
   });
 
   let voiceTranscriptBuffer = "";
@@ -171,6 +161,20 @@ export async function startLiveSession(uid: string, frontendWs: WebSocket) {
   geminiWs.on("message", (data) => {
     try {
       const response = JSON.parse(data.toString());
+
+      if (response.setupComplete) {
+        console.log(`[LiveProxy] Setup complete for UID=${uid}`);
+        // Session is ready. Send initial context/history if any.
+        if (historyTurns.length > 0) {
+          geminiWs.send(JSON.stringify({
+            clientContent: {
+              turns: historyTurns,
+              turnComplete: true
+            }
+          }));
+        }
+        return;
+      }
 
       if (response.serverContent) {
         if (response.serverContent.modelTurn) {
