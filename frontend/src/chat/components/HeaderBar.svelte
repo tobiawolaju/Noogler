@@ -18,7 +18,7 @@
       >
         <div style="display: flex; flex-direction: column; align-items: flex-start;">
           <div style="display: flex; align-items: center; gap: 6px;">
-             <h2>Noogler</h2>
+             <h2>😶‍🌫️Noogler</h2>
           </div>
           <p class="wa-status-line">{statusLine}</p>
         </div>
