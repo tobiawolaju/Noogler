@@ -644,15 +644,15 @@ textarea {
 }
 
 .wa-bubble-wrap.from-me {
-  margin-right: auto;
-  align-items: flex-start;
-  text-align: left;
-}
-
-.wa-bubble-wrap.from-body {
   margin-left: auto;
   align-items: flex-end;
   text-align: right;
+}
+
+.wa-bubble-wrap.from-body {
+  margin-right: auto;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .wa-bubble-wrap.from-me .wa-bubble-tag {
@@ -682,9 +682,9 @@ textarea {
 }
 
 .wa-bubble.from-me {
-  background: #f0f0f0;
+  background: var(--accent-soft);
   color: #1a1a1a;
-  align-self: flex-start;
+  align-self: flex-end;
   margin-bottom: 8px;
   margin-top: 8px;
 }
@@ -692,7 +692,7 @@ textarea {
 .wa-bubble.from-body {
   background: var(--accent);
   color: #ffffff;
-  align-self: flex-end;
+  align-self: flex-start;
 }
 
 
@@ -782,11 +782,11 @@ textarea {
 }
 
 .from-me .wa-bubble-actions {
-  right: -50px;
+  left: -50px;
 }
 
 .from-body .wa-bubble-actions {
-  left: -50px;
+  right: -50px;
 }
 
 .wa-bubble-wrap:hover .wa-bubble-actions {
