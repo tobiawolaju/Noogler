@@ -44,13 +44,13 @@
         </div>
       {/if}
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto;">
+      <div class="wa-panel-actions">
         {#if !connected}
-          <button class="btn primary" on:click={onConnect} style="padding: 10px;">Connect</button>
+          <button class="btn primary" on:click={onConnect}>Connect</button>
         {:else}
-          <button class="btn secondary" on:click={onDisconnect} style="padding: 10px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1);">Disconnect</button>
+          <button class="btn secondary" on:click={onDisconnect}>Disconnect</button>
         {/if}
-        <button class="btn secondary" on:click={onPing} disabled={!connected} style="padding: 10px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1);">Test Ping</button>
+        <button class="btn secondary" on:click={onPing} disabled={!connected}>Test Ping</button>
       </div>
     </div>
   </div>

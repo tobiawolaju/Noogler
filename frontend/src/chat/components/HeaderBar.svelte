@@ -16,8 +16,8 @@
         on:click|stopPropagation={onOpenPanel}
         aria-label="Open agent details"
       >
-        <div style="display: flex; flex-direction: column; align-items: flex-start;">
-          <div style="display: flex; align-items: center; gap: 6px;">
+        <div class="wa-title-wrap">
+          <div class="wa-name-row">
              <h2>Noogler</h2>
           </div>
           <p class="wa-status-line">{statusLine}</p>
@@ -41,11 +41,10 @@
       type="button"
       class="wa-icon-btn call-toggle"
       class:call-active={callActive}
-      style="z-index: 1; {callActive ? 'background-color: #ff4d4d; color: white !important;' : ''}"
       on:click|stopPropagation={onToggleCall}
       aria-label={callActive ? "End call" : "Start call"}
     >
-      <span class="material-symbols-outlined" style={callActive ? "color: white !important;" : ""}>{callActive ? "call_end" : "call"}</span>
+      <span class="material-symbols-outlined">{callActive ? "call_end" : "call"}</span>
     </button>
   </div>
 </header>

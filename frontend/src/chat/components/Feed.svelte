@@ -34,7 +34,7 @@
               <strong>{event.text ?? event.instruction}</strong>
               <small>Tag: {event.tag}</small>
             {:else if event.type === "chat_reply"}
-              <span style="font-size: 1.1em; white-space: pre-wrap;">{event.text}</span>
+              <span class="wa-chat-text">{event.text}</span>
             {:else if event.type === "pong"}
               <strong>Pong</strong>
               <small>ts_ms: {event.ts_ms}</small>
