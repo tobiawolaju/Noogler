@@ -14,9 +14,12 @@
   --ink-muted: #666666;
 
   /* Brand */
-  --accent: #4c83c2;
+  --accent: #c3e781;
+  --accent2: #c3e78186;
   --accent-soft: #ebebeb;
-  --accent-text: #ffffff;
+  --accent-text: #000000;
+  --accent-text2: #3e5838;
+  --accent-text3: #616161;
 
   /* Status */
   --error: #d04f4f;
@@ -731,17 +734,20 @@ textarea {
 
 .wa-bubble.from-me {
   background: var(--accent-soft);
-  color: #1a1a1a;
+  color: var(--accent-text3);
+  font-size: large;
   align-self: flex-end;
   margin-bottom: 8px;
   margin-top: 8px;
+  max-width: 70vw;
 }
 
 .wa-bubble.from-body {
+  font-size: large;
   background: var(--accent);
-  color: #ffffff;
+  color: var(--accent-text2);
   align-self: flex-start;
-  max-width: 85%;
+  max-width: 60vw;
 }
 
 
@@ -837,7 +843,7 @@ textarea {
 }
 
 .wa-replied-msg {
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--accent2);
   padding: 8px 12px;
   border-radius: var(--radius-md);
   margin-bottom: 8px;
