@@ -37,9 +37,6 @@ Supported commands:
 If you reply with JSON commands, the entire response MUST be the JSON object and nothing else.
 If you reply with conversational text ONLY (no commands), just output the plain text.
 `;
-const VOICE_SYSTEM_PROMPT = `You are Noogler, a helpful AI desktop assistant. 
-You are currently on a live voice call with the user. 
-Converse with them naturally, keep answers concise and conversational, as you are speaking out loud.`;
 export async function handleMessage(uid, text) {
     // Check if there is an active Live session
     const liveWs = activeSessions.get(uid);
@@ -110,11 +107,10 @@ export async function startLiveSession(uid, frontendWs) {
     console.log(`[LiveProxy] Starting Gemini Live session for UID=${uid}`);
     const key = process.env.GEMINI_API_KEY || GEMINI_API_KEY;
     const wsUrl = `wss://${HOST}/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${key}`;
-    const historyTurns = await getHistory(uid);
     const geminiWs = new WebSocket(wsUrl);
     geminiWs.on("open", () => {
         console.log(`[LiveProxy] Connected to Gemini Live for UID=${uid}`);
-        // Send setup - removed systemInstruction to fix 1007 Invalid argument
+        // Send setup without systemInstruction
         const setupMsg = {
             setup: {
                 model: "models/gemini-2.5-flash-native-audio-preview-12-2025",
@@ -131,19 +127,8 @@ export async function startLiveSession(uid, frontendWs) {
             const response = JSON.parse(data.toString());
             if (response.setupComplete) {
                 console.log(`[LiveProxy] Setup complete for UID=${uid}`);
-                // Workaround: Inject the system prompt as the very first user turn
-                const initialContext = [...historyTurns];
-                initialContext.unshift({
-                    role: "user",
-                    parts: [{ text: `System Instruction: ${VOICE_SYSTEM_PROMPT}` }]
-                });
-                // Send the injected prompt + initial context/history
-                geminiWs.send(JSON.stringify({
-                    clientContent: {
-                        turns: initialContext,
-                        turnComplete: true
-                    }
-                }));
+                // Completely removed the text payload injection here. 
+                // The socket is now safely open and purely waiting for `realtimeInput` (audio chunks).
                 return;
             }
             if (response.serverContent) {
