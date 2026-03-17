@@ -28,6 +28,7 @@
   let events = [];
   let replyingTo = null;
   let feedEl;
+  let inputEl;
   let showMobilePanel = false;
 
   let callActive = false;
@@ -220,6 +221,14 @@
     showMobilePanel = true;
   };
 
+  const handleReply = (ev) => {
+    replyingTo = ev;
+    // Focus the input when replying
+    if (inputEl) {
+      inputEl.focus();
+    }
+  };
+
   const closePanel = () => {
     showMobilePanel = false;
   };
@@ -259,11 +268,12 @@
       {events} 
       bind:feedEl 
       userName={userFirstName} 
-      onReply={(ev) => replyingTo = ev} 
+      onReply={handleReply} 
     />
 
     <FooterInput
       bind:instruction
+      bind:inputEl
       {connected}
       {replyingTo}
       onSubmit={sendCommand}

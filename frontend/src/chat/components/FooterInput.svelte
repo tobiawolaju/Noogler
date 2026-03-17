@@ -4,6 +4,7 @@
   export let onSubmit = () => {};
   export let replyingTo = null;
   export let onCancelReply = () => {};
+  export let inputEl = null;
 </script>
 
 <div class="wa-footer">
@@ -21,9 +22,12 @@
 
   <form class="wa-input" on:submit|preventDefault={onSubmit}>
     <input
-      id="noogler-input"
-      name="noogler-input"
+      id="chat-message-input"
+      name="chat-message-input"
+      type="text"
+      inputmode="text"
       bind:value={instruction}
+      bind:this={inputEl}
       placeholder="Message Noogler..."
       autocomplete="off"
       autocorrect="off"
