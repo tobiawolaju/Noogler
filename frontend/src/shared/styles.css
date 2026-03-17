@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0,0");
 
+/* --- Variables & Core Tokens --- */
 :root {
   color-scheme: light;
   --bg: #ffffff;
@@ -15,6 +16,7 @@
   --shadow: none;
 }
 
+/* --- Base Resets & Global Styles --- */
 * {
   box-sizing: border-box;
 }
@@ -55,6 +57,7 @@ main.landing {
   gap: 40px;
 }
 
+/* --- Landing Page: Hero Section --- */
 .hero {
   padding: 48px 12px;
   text-align: center;
@@ -150,6 +153,7 @@ main.landing {
   }
 }
 
+/* --- Landing Page: Grid & Cards --- */
 .grid {
   display: grid;
   gap: 20px;
@@ -177,6 +181,7 @@ main.landing {
   padding: 0;
 }
 
+/* --- App Layout: Main Shell --- */
 .app-shell {
   max-width: 1200px;
   margin: 0 auto;
@@ -230,6 +235,7 @@ main.landing {
   gap: 24px;
 }
 
+/* --- App Layout: Panels & Lists --- */
 .panel {
   background: var(--card);
   border-radius: 20px;
@@ -258,6 +264,7 @@ main.landing {
   display: block;
 }
 
+/* --- Forms & Inputs (Base) --- */
 form.command-form {
   display: grid;
   gap: 12px;
@@ -315,6 +322,7 @@ textarea {
 }
 
 /* WhatsApp-like chat layout */
+/* --- WhatsApp Chat: Layout Structure --- */
 .wa-shell {
   display: grid;
   grid-template-columns: 1fr;
@@ -456,6 +464,7 @@ textarea {
   padding: 8px 14px;
 }
 
+/* --- WhatsApp Chat: Main Chat View --- */
 .wa-main {
   background: #ffffff;
   display: flex;
@@ -569,6 +578,7 @@ textarea {
   font-size: 0.85rem;
 }
 
+/* --- WhatsApp Chat: Feed & History --- */
 .wa-feed {
   background: #ffffff;
   border-radius: 0;
@@ -800,6 +810,7 @@ textarea {
   background: #e0e0e0;
 }
 
+/* --- WhatsApp Chat: Input & Action Bar --- */
 .wa-input {
   display: flex;
   gap: 12px;
@@ -850,6 +861,7 @@ textarea {
   box-shadow: none;
 }
 
+/* --- Voice Call: Full-screen Overlay --- */
 .call-overlay {
   position: fixed;
   inset: 0;
@@ -992,6 +1004,7 @@ textarea {
 
 
 /* Mobile overlay panel */
+/* --- Overlay Management & Panels --- */
 .wa-overlay {
   position: fixed;
   inset: 0;
