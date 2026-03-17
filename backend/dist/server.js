@@ -1,8 +1,9 @@
 import "dotenv/config";
+import { createServer } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import { handleMessage, startLiveSession, sendAudioChunk, endLiveSession } from "./agent.js";
 import { getHistory } from "./db.js";
-const PORT = Number(process.env.BACKEND_PORT || 8080);
+const PORT = Number(process.env.PORT || process.env.BACKEND_PORT || 8080);
 const LOG_LEVEL = (process.env.LOG_LEVEL || "info").toLowerCase();
 const LOG_LEVELS = { debug: 10, info: 20, warn: 30, error: 40 };
 function log(level, message, meta) {
@@ -16,8 +17,23 @@ function log(level, message, meta) {
         console.log(`[${stamp}] [${level.toUpperCase()}] ${message}`);
     }
 }
-const wss = new WebSocketServer({ port: PORT });
-log("info", `Backend listening on ws://0.0.0.0:${PORT}`);
+// Create HTTP server for health checks and to host WebSocket
+const server = createServer((req, res) => {
+    if (req.method === "GET" && req.url === "/") {
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("Backend is live\n");
+        return;
+    }
+    res.writeHead(404);
+    res.end();
+});
+const wss = new WebSocketServer({ server });
+// Increase timeouts for Cloud Run stability
+server.keepAliveTimeout = 65000; // 65 seconds
+server.headersTimeout = 66000; // 66 seconds
+server.listen(PORT, "0.0.0.0", () => {
+    log("info", `Backend listening on http://0.0.0.0:${PORT} (WS included)`);
+});
 // Track connections by user_uid
 const agentsByUid = new Map();
 const frontendsByUid = new Map();

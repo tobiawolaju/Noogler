@@ -37,8 +37,6 @@ pnpm-debug.log*
 **/build/
 /out/
 **/out/
-/dist/
-**/dist/
 
 # Rust
 /target/
