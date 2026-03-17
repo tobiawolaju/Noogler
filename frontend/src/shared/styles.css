@@ -14,17 +14,17 @@
   --ink-muted: #666666;
 
   /* Brand */
-  --accent: #c3e781;
+  --accent: #f3ffdb;
   --accent2: #c3e78186;
-  --accent-soft: #ebebeb;
+  --accent-soft: #f1f1f1;
   --accent-text: #000000;
   --accent-text2: #3e5838;
   --accent-text3: #616161;
 
   /* Status */
   --error: #d04f4f;
-  --error-bg: #fde7e7;
-  --error-border: #f1b1b1;
+  --error-bg: #ffffff;
+  --error-border: #ffffff;
   --success: #25d366;
   --success-soft: #beffa6;
   --success-dark: #00634d;
@@ -711,7 +711,7 @@ textarea {
   border: none;
   color: var(--ink);
   text-align: right;
-  font-size: large;
+  font-size: small;
   margin-left: auto;
 }
 
@@ -719,7 +719,7 @@ textarea {
   background: var(--success-dark);
   border: none;
   color: var(--bg);
-  font-size: large;
+  font-size: small;
 }
 
 .wa-bubble.ok {
@@ -735,7 +735,7 @@ textarea {
 .wa-bubble.from-me {
   background: var(--accent-soft);
   color: var(--accent-text3);
-  font-size: large;
+  font-size: small;
   align-self: flex-end;
   margin-bottom: 8px;
   margin-top: 8px;
@@ -743,7 +743,7 @@ textarea {
 }
 
 .wa-bubble.from-body {
-  font-size: large;
+  font-size: small;
   background: var(--accent);
   color: var(--accent-text2);
   align-self: flex-start;
