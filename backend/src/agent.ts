@@ -74,7 +74,7 @@ export async function handleMessage(uid: string, text: string): Promise<AgentRes
   await appendHistory(uid, "user", text);
 
   const url = `https://${HOST}/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-  
+
   const body = {
     system_instruction: { parts: { text: TEXT_SYSTEM_PROMPT } },
     contents: history,
@@ -134,7 +134,7 @@ export async function startLiveSession(uid: string, frontendWs: WebSocket) {
 
   const key = process.env.GEMINI_API_KEY || GEMINI_API_KEY;
   const wsUrl = `wss://${HOST}/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${key}`;
-  
+
   const historyTurns = await getHistory(uid);
   const geminiWs = new WebSocket(wsUrl);
 
@@ -144,7 +144,7 @@ export async function startLiveSession(uid: string, frontendWs: WebSocket) {
     // Send setup
     const setupMsg = {
       setup: {
-        model: "models/gemini-2.0-flash-exp",
+        model: "models/gemini-live-2.5-flash-native-audio",
         systemInstruction: {
           parts: [{ text: VOICE_SYSTEM_PROMPT }]
         },
@@ -154,7 +154,7 @@ export async function startLiveSession(uid: string, frontendWs: WebSocket) {
       }
     };
     geminiWs.send(JSON.stringify(setupMsg));
-    
+
     // Immediately send history
     if (historyTurns.length > 0) {
       geminiWs.send(JSON.stringify({
@@ -189,7 +189,7 @@ export async function startLiveSession(uid: string, frontendWs: WebSocket) {
             }
           }
         }
-        
+
         if (response.serverContent.turnComplete) {
           if (voiceTranscriptBuffer.trim().length > 0) {
             appendHistory(uid, "model", voiceTranscriptBuffer.trim());
