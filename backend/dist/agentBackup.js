@@ -8,6 +8,7 @@ if (!GEMINI_API_KEY) {
     console.warn("WARNING: GEMINI_API_KEY is not set. The agent will not function properly.");
 }
 // Maintain active Gemini connections per user UID
+// Maintain active Gemini connections per user UID
 const activeSessions = new Map();
 const TEXT_SYSTEM_PROMPT = `You are Noogler, a helpful AI desktop assistant.
 You can converse with the user normally OR you can execute commands on their Windows PC.
@@ -15,7 +16,7 @@ When the user asks you a general question or wants to chat, reply with normal te
 When the user asks you to perform an action on their PC (e.g., "open start menu", "move the mouse", "type something"), you must output ONLY a valid JSON object matching this exact schema:
 {
   "reply": "A natural language response saying what you are doing (e.g. 'Opening notepad for you.')",
-  "commands":[
+  "commands": [
     { "index": 1, "instruction": "move <x> <y>", "tag": "ai" }
   ]
 }
@@ -114,10 +115,13 @@ export async function startLiveSession(uid, frontendWs) {
     const geminiWs = new WebSocket(wsUrl);
     geminiWs.on("open", () => {
         console.log(`[LiveProxy] Connected to Gemini Live for UID=${uid}`);
-        // Send setup - removed systemInstruction to fix 1007 Invalid argument
+        // Send setup
         const setupMsg = {
             setup: {
                 model: "models/gemini-2.5-flash-native-audio-preview-12-2025",
+                systemInstruction: {
+                    parts: [{ text: VOICE_SYSTEM_PROMPT }]
+                },
                 generationConfig: {
                     responseModalities: ["AUDIO"]
                 }
@@ -131,19 +135,15 @@ export async function startLiveSession(uid, frontendWs) {
             const response = JSON.parse(data.toString());
             if (response.setupComplete) {
                 console.log(`[LiveProxy] Setup complete for UID=${uid}`);
-                // Workaround: Inject the system prompt as the very first user turn
-                const initialContext = [...historyTurns];
-                initialContext.unshift({
-                    role: "user",
-                    parts: [{ text: `System Instruction: ${VOICE_SYSTEM_PROMPT}` }]
-                });
-                // Send the injected prompt + initial context/history
-                geminiWs.send(JSON.stringify({
-                    clientContent: {
-                        turns: initialContext,
-                        turnComplete: true
-                    }
-                }));
+                // Session is ready. Send initial context/history if any.
+                if (historyTurns.length > 0) {
+                    geminiWs.send(JSON.stringify({
+                        clientContent: {
+                            turns: historyTurns,
+                            turnComplete: true
+                        }
+                    }));
+                }
                 return;
             }
             if (response.serverContent) {
