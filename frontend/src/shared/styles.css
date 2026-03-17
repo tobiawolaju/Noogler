@@ -579,7 +579,7 @@ textarea {
   gap: 0px;
   flex: 1;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0) transparent;
 }
 
 .wa-feed::-webkit-scrollbar {
@@ -985,8 +985,13 @@ textarea {
   border-radius: 50%;
 }
 
-.wa-status-dot.online { background: #25d366; }
-.wa-status-dot.offline { background: #ff4d4d; }
+.wa-status-dot.online {
+  background: #25d366;
+}
+
+.wa-status-dot.offline {
+  background: #ff4d4d;
+}
 
 
 .panel-brand .wa-avatar {
