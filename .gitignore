@@ -17,9 +17,11 @@ backend/node_modules
 *.env
 frontend/.env
 backend/.env
-#rontend/firebase.js
+#frontend/firebase.js
 ServiceAccountsJson.json
 backend/ServiceAccountsJson.json
+serviceaccount.json
+backend/serviceaccount.json
 config.json
 
 # Node / frontend / backend
@@ -35,6 +37,8 @@ pnpm-debug.log*
 **/build/
 /out/
 **/out/
+/dist/
+**/dist/
 
 # Rust
 /target/
