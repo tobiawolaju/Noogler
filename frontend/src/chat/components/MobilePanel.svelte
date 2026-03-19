@@ -91,6 +91,9 @@
           on:input={(e) => onSoulInput(e.currentTarget.value)}
           on:blur={(e) => onSoulCommit(e.currentTarget.value)}
         ></textarea>
+        <a class="btn secondary wa-soul-help" href="/souls.html">
+          Don’t know what to put in souls? Go to Souls
+        </a>
       </div>
 
       {#if lastError}

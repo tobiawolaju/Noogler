@@ -1,5 +1,6 @@
 <script>
   export let statusLine = "";
+  export let agentName = "Agent 1";
   export let callActive = false;
   export let onOpenPanel = () => {};
   export let onToggleCall = () => {};
@@ -18,7 +19,7 @@
       >
         <div class="wa-title-wrap">
           <div class="wa-name-row">
-             <h2>Noogler</h2>
+             <h2>{agentName}</h2>
           </div>
           <p class="wa-status-line">{statusLine}</p>
         </div>

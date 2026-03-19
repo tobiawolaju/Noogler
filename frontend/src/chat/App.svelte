@@ -331,6 +331,7 @@
   <main class="wa-main">
     <HeaderBar
       {statusLine}
+      agentName={tag.trim() || "Agent 1"}
       {callActive}
       {micVolume}
       onOpenPanel={openPanel}
@@ -357,6 +358,7 @@
 
   <OngoingCallOverlay
     {ws}
+    agentName={tag.trim() || "Agent 1"}
     bind:micVolume
     visible={overlayVisible}
     elapsedLabel={callDurationLabel}

@@ -608,6 +608,12 @@ input {
   opacity: 0.5;
 }
 
+.wa-soul-help {
+  margin-top: var(--space-xs);
+  text-decoration: none;
+  text-align: center;
+}
+
 .wa-panel-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;

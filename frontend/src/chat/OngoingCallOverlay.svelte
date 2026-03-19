@@ -2,6 +2,7 @@
   import { onDestroy } from "svelte";
   export let visible = false;
   export let ws = null;
+  export let agentName = "Agent 1";
   export let elapsedLabel = "0:00";
   export let onClose = () => {};
   export let onEnd = () => {};
@@ -149,7 +150,7 @@
 {#if visible}
   <div class="call-overlay" role="dialog" aria-label="Ongoing call">
     <div class="call-overlay-header">
-      <h2>Noogler</h2>
+      <h2>{agentName}</h2>
       <p class="call-overlay-status">ongoing call - {elapsedLabel}</p>
     </div>
     <div class="call-overlay-content">
@@ -168,4 +169,3 @@
     </div>
   </div>
 {/if}
-
