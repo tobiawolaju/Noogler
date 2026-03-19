@@ -141,13 +141,21 @@
           events = [...data.events, ...events].slice(-200);
         } else if (data.type === "user_settings") {
           hasApiKey = Boolean(data.has_gemini_api_key);
-          tag = typeof data.agent_tag === "string" && data.agent_tag.trim() ? data.agent_tag.trim() : "Agent 1";
-          agentSoul = typeof data.agent_soul === "string" ? data.agent_soul : "";
+          if (typeof data.agent_tag === "string") {
+            tag = data.agent_tag.trim() ? data.agent_tag.trim() : "Agent 1";
+          }
+          if (typeof data.agent_soul === "string") {
+            agentSoul = data.agent_soul;
+          }
           if (!hasApiKey) apiKey = "";
         } else if (data.type === "settings_updated") {
           hasApiKey = Boolean(data.has_gemini_api_key);
-          tag = typeof data.agent_tag === "string" && data.agent_tag.trim() ? data.agent_tag.trim() : "Agent 1";
-          agentSoul = typeof data.agent_soul === "string" ? data.agent_soul : "";
+          if (typeof data.agent_tag === "string") {
+            tag = data.agent_tag.trim() ? data.agent_tag.trim() : "Agent 1";
+          }
+          if (typeof data.agent_soul === "string") {
+            agentSoul = data.agent_soul;
+          }
           if (hasApiKey) {
             apiKey = "";
           }
