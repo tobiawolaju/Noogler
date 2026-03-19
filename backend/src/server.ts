@@ -2,7 +2,7 @@ import "dotenv/config";
 import { createServer } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import { handleMessage, startLiveSession, sendAudioChunk, endLiveSession } from "./agent.js";
-import { getHistory, getUserGeminiApiKey, setUserGeminiApiKey } from "./db.js";
+import { getHistory, getUserSettings, updateUserSettings } from "./db.js";
 
 const PORT = Number(process.env.PORT || process.env.BACKEND_PORT || 8080);
 const LOG_LEVEL = (process.env.LOG_LEVEL || "info").toLowerCase();
@@ -111,11 +111,13 @@ wss.on("connection", (ws) => {
         frontendsByUid.get(clientUid)!.add(ws);
         log("info", `Frontend registered for UID=${clientUid}`);
         ws.send(JSON.stringify(makeEvent("backend_ready", "ok", "Backend connected")));
-        getUserGeminiApiKey(clientUid)
-          .then((apiKey) => {
+        getUserSettings(clientUid)
+          .then((settings) => {
             ws.send(JSON.stringify({
               type: "user_settings",
-              has_gemini_api_key: Boolean(apiKey)
+              has_gemini_api_key: Boolean(settings.gemini_api_key),
+              agent_tag: settings.agent_tag,
+              agent_soul: settings.agent_soul
             }));
           })
           .catch((err) => log("error", "Failed to load user settings", err));
@@ -190,13 +192,19 @@ wss.on("connection", (ws) => {
       }
 
       if (msg.type === "update_settings") {
-        const nextApiKey = typeof msg.gemini_api_key === "string" ? msg.gemini_api_key : "";
-        setUserGeminiApiKey(uid, nextApiKey)
-          .then(() => {
-            endLiveSession(uid);
+        const incoming: { gemini_api_key?: string; agent_tag?: string; agent_soul?: string } = {};
+        if (typeof msg.gemini_api_key === "string") incoming.gemini_api_key = msg.gemini_api_key;
+        if (typeof msg.agent_tag === "string") incoming.agent_tag = msg.agent_tag;
+        if (typeof msg.agent_soul === "string") incoming.agent_soul = msg.agent_soul;
+
+        updateUserSettings(uid, incoming)
+          .then((settings) => {
+            if (Object.prototype.hasOwnProperty.call(incoming, "gemini_api_key")) endLiveSession(uid);
             ws.send(JSON.stringify({
               type: "settings_updated",
-              has_gemini_api_key: Boolean(nextApiKey.trim())
+              has_gemini_api_key: Boolean(settings.gemini_api_key),
+              agent_tag: settings.agent_tag,
+              agent_soul: settings.agent_soul
             }));
           })
           .catch((err) => {

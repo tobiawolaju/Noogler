@@ -42,6 +42,13 @@ if (!admin.apps.length) {
 
 const db = admin.database();
 const userRef = (uid: string) => db.ref(`users/${uid}`);
+const DEFAULT_AGENT_TAG = "Agent 1";
+
+export type UserSettings = {
+  gemini_api_key: string;
+  agent_tag: string;
+  agent_soul: string;
+};
 
 export async function getHistory(uid: string): Promise<any[]> {
   try {
@@ -101,4 +108,40 @@ export async function setUserGeminiApiKey(uid: string, apiKey: string): Promise<
     console.error(`[DB] Failed to set Gemini API key for UID=${uid}`, err);
     throw err;
   }
+}
+
+export async function getUserSettings(uid: string): Promise<UserSettings> {
+  try {
+    const snapshot = await userRef(uid).once("value");
+    const val = snapshot.val() || {};
+    return {
+      gemini_api_key: typeof val.gemini_api_key === "string" ? val.gemini_api_key.trim() : "",
+      agent_tag: typeof val.agent_tag === "string" && val.agent_tag.trim() ? val.agent_tag.trim() : DEFAULT_AGENT_TAG,
+      agent_soul: typeof val.agent_soul === "string" ? val.agent_soul.trim() : ""
+    };
+  } catch (err) {
+    console.error(`[DB] Failed to get settings for UID=${uid}`, err);
+    return { gemini_api_key: "", agent_tag: DEFAULT_AGENT_TAG, agent_soul: "" };
+  }
+}
+
+export async function updateUserSettings(
+  uid: string,
+  patch: Partial<Pick<UserSettings, "gemini_api_key" | "agent_tag" | "agent_soul">>
+): Promise<UserSettings> {
+  const next: Record<string, string> = {};
+  if (typeof patch.gemini_api_key === "string") next.gemini_api_key = patch.gemini_api_key.trim();
+  if (typeof patch.agent_tag === "string") next.agent_tag = patch.agent_tag.trim() || DEFAULT_AGENT_TAG;
+  if (typeof patch.agent_soul === "string") next.agent_soul = patch.agent_soul.trim();
+
+  if (Object.keys(next).length > 0) {
+    try {
+      await userRef(uid).update(next);
+    } catch (err) {
+      console.error(`[DB] Failed to update settings for UID=${uid}`, err);
+      throw err;
+    }
+  }
+
+  return getUserSettings(uid);
 }

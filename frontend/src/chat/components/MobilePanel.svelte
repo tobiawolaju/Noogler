@@ -4,6 +4,7 @@
   export let connected = false;
   export let wsUrl = "";
   export let tag = "";
+  export let agentSoul = "";
   export let apiKey = "";
   export let hasApiKey = false;
   export let lastError = "";
@@ -12,6 +13,8 @@
   export let onDisconnect = () => {};
   export let onPing = () => {};
   export let onApiKeyCommit = (_value) => {};
+  export let onTagCommit = (_value) => {};
+  export let onSoulCommit = (_value) => {};
 
   let editingApiKey = false;
 
@@ -43,7 +46,22 @@
 
       <div class="wa-settings-group">
         <label for="agent-tag">Agent Tag</label>
-        <input id="agent-tag" bind:value={tag} placeholder="e.g. ws, dev, test" />
+        <input
+          id="agent-tag"
+          bind:value={tag}
+          placeholder="Agent 1"
+          on:blur={() => onTagCommit(tag)}
+        />
+      </div>
+
+      <div class="wa-settings-group">
+        <label for="agent-soul">Agent Soul</label>
+        <input
+          id="agent-soul"
+          bind:value={agentSoul}
+          placeholder="Add your agent's persona..."
+          on:blur={() => onSoulCommit(agentSoul)}
+        />
       </div>
 
       <div class="wa-settings-group">

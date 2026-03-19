@@ -22,7 +22,8 @@
   let shouldReconnect = true;
 
   let instruction = "";
-  let tag = "ws";
+  let tag = "Agent 1";
+  let agentSoul = "";
   let apiKey = "";
   let hasApiKey = false;
   let index = 1;
@@ -139,9 +140,13 @@
           events = [...data.events, ...events].slice(-200);
         } else if (data.type === "user_settings") {
           hasApiKey = Boolean(data.has_gemini_api_key);
+          tag = typeof data.agent_tag === "string" && data.agent_tag.trim() ? data.agent_tag.trim() : "Agent 1";
+          agentSoul = typeof data.agent_soul === "string" ? data.agent_soul : "";
           if (!hasApiKey) apiKey = "";
         } else if (data.type === "settings_updated") {
           hasApiKey = Boolean(data.has_gemini_api_key);
+          tag = typeof data.agent_tag === "string" && data.agent_tag.trim() ? data.agent_tag.trim() : "Agent 1";
+          agentSoul = typeof data.agent_soul === "string" ? data.agent_soul : "";
           if (hasApiKey) {
             apiKey = "";
           }
@@ -176,7 +181,7 @@
       type: "user",
       index,
       text: instruction.trim(),
-      tag: tag.trim() || "ws"
+      tag: tag.trim() || "Agent 1"
     };
 
     if (replyingTo) {
@@ -215,6 +220,32 @@
     ws.send(JSON.stringify({
       type: "update_settings",
       gemini_api_key: nextKey
+    }));
+  };
+
+  const commitTag = (value) => {
+    if (!connected || !ws) {
+      lastError = "Connect first to save agent tag";
+      return;
+    }
+    const nextTag = typeof value === "string" && value.trim() ? value.trim() : "Agent 1";
+    tag = nextTag;
+    ws.send(JSON.stringify({
+      type: "update_settings",
+      agent_tag: nextTag
+    }));
+  };
+
+  const commitSoul = (value) => {
+    if (!connected || !ws) {
+      lastError = "Connect first to save agent soul";
+      return;
+    }
+    const nextSoul = typeof value === "string" ? value : "";
+    agentSoul = nextSoul;
+    ws.send(JSON.stringify({
+      type: "update_settings",
+      agent_soul: nextSoul
     }));
   };
 
@@ -317,6 +348,7 @@
     {connected}
     bind:wsUrl
     bind:tag
+    bind:agentSoul
     bind:apiKey
     {hasApiKey}
     {lastError}
@@ -325,5 +357,7 @@
     onDisconnect={disconnect}
     onPing={sendPing}
     onApiKeyCommit={commitApiKey}
+    onTagCommit={commitTag}
+    onSoulCommit={commitSoul}
   />
 </div>
