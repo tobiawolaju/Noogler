@@ -20,6 +20,7 @@
   let reconnectTimer;
   let reconnectAttempts = 0;
   let shouldReconnect = true;
+  let soulSaveTimer = null;
 
   let instruction = "";
   let tag = "Agent 1";
@@ -249,6 +250,17 @@
     }));
   };
 
+  const queueSoulCommit = (value) => {
+    if (soulSaveTimer) {
+      clearTimeout(soulSaveTimer);
+      soulSaveTimer = null;
+    }
+    soulSaveTimer = setTimeout(() => {
+      soulSaveTimer = null;
+      commitSoul(value);
+    }, 700);
+  };
+
   const scheduleReconnect = () => {
     if (!shouldReconnect) return;
     if (reconnectTimer) return;
@@ -302,6 +314,7 @@
 
   onDestroy(() => {
     if (authUnsubscribe) authUnsubscribe();
+    if (soulSaveTimer) clearTimeout(soulSaveTimer);
     disconnect();
     stopTimer();
   });
@@ -359,5 +372,6 @@
     onApiKeyCommit={commitApiKey}
     onTagCommit={commitTag}
     onSoulCommit={commitSoul}
+    onSoulInput={queueSoulCommit}
   />
 </div>

@@ -15,11 +15,12 @@
   export let onApiKeyCommit = (_value) => {};
   export let onTagCommit = (_value) => {};
   export let onSoulCommit = (_value) => {};
+  export let onSoulInput = (_value) => {};
 
   let editingApiKey = false;
 
-  $: apiKeyDisplay = editingApiKey ? apiKey : (hasApiKey ? "xxxxxxxxxxx" : "");
   $: if (hasApiKey && !apiKey) editingApiKey = false;
+  $: apiKeyPlaceholder = hasApiKey ? "***********************" : "Paste Gemini API key";
 </script>
 
 {#if visible}
@@ -45,51 +46,51 @@
       </div>
 
       <div class="wa-settings-group">
+        <label for="gemini-api-key">API Key (Gemini)</label>
+        <div class="wa-inline-field">
+          <input
+            id="gemini-api-key"
+            type="text"
+            bind:value={apiKey}
+            placeholder={apiKeyPlaceholder}
+            on:focus={() => {
+              if (!editingApiKey) editingApiKey = true;
+            }}
+          />
+          <button
+            type="button"
+            class="wa-save-icon"
+            aria-label="Save API key"
+            title="Save API key"
+            disabled={!apiKey.trim()}
+            on:click={() => onApiKeyCommit(apiKey)}
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">&#xE161;</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="wa-settings-group">
         <label for="agent-tag">Agent Tag</label>
         <input
           id="agent-tag"
           bind:value={tag}
           placeholder="Agent 1"
-          on:blur={() => onTagCommit(tag)}
+          on:blur={(e) => onTagCommit(e.currentTarget.value)}
         />
       </div>
 
       <div class="wa-settings-group">
         <label for="agent-soul">Agent Soul</label>
-        <input
+        <textarea
           id="agent-soul"
           bind:value={agentSoul}
+          rows="3"
+          style="min-height: 84px;"
           placeholder="Add your agent's persona..."
-          on:blur={() => onSoulCommit(agentSoul)}
-        />
-      </div>
-
-      <div class="wa-settings-group">
-        <label for="gemini-api-key">API Key (Gemini)</label>
-        <input
-          id="gemini-api-key"
-          type="text"
-          value={apiKeyDisplay}
-          placeholder="Paste Gemini API key"
-          on:focus={() => {
-            if (!editingApiKey) editingApiKey = true;
-          }}
-          on:input={(e) => {
-            apiKey = e.currentTarget.value;
-            editingApiKey = true;
-          }}
-          on:paste={(e) => {
-            setTimeout(() => {
-              apiKey = e.currentTarget.value;
-              editingApiKey = true;
-              onApiKeyCommit(apiKey);
-              e.currentTarget.blur();
-            }, 0);
-          }}
-          on:blur={() => {
-            if (editingApiKey) onApiKeyCommit(apiKey);
-          }}
-        />
+          on:input={(e) => onSoulInput(e.currentTarget.value)}
+          on:blur={(e) => onSoulCommit(e.currentTarget.value)}
+        ></textarea>
       </div>
 
       {#if lastError}
