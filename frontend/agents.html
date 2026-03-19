@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Manage Agents</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" />
+  <link rel="stylesheet" href="/src/shared/styles.css" />
+  <style>
+    body { background: var(--bg-primary); }
+    .agents-shell { max-width: 900px; margin: 0 auto; padding: 20px 16px 88px; }
+    .agents-top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .agents-back {
+      width: 40px; height: 40px; border-radius: 999px; border: none;
+      background: var(--bg-secondary); color: var(--text-primary);
+      display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
+    }
+    .agents-title { margin: 0; font-size: 1.35rem; }
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .agent-card {
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .agent-card h3 { margin: 0; font-size: 1rem; }
+    .agent-card p { margin: 0; color: var(--text-secondary); font-size: .9rem; }
+    .agent-empty { color: var(--text-secondary); }
+    .agents-fab {
+      position: fixed; right: 18px; bottom: 18px; width: 56px; height: 56px; border-radius: 999px;
+      border: none; background: var(--accent); color: var(--text-on-accent);
+      display: inline-flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-md);
+    }
+    .agents-modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: flex-end;
+      padding: 0;
+    }
+    .agents-modal.open { display: flex; }
+    .agents-sheet {
+      width: 100%; background: var(--bg-primary); border-radius: 16px 16px 0 0;
+      padding: 14px; display: flex; flex-direction: column; gap: 10px;
+      max-height: 92vh; overflow: auto;
+    }
+    .agents-sheet h2 { margin: 0 0 4px; font-size: 1.05rem; }
+    .agents-sheet label { font-size: .78rem; color: var(--text-secondary); font-weight: 600; }
+    .agents-sheet input, .agents-sheet textarea {
+      width: 100%; padding: 10px; border-radius: var(--radius-md);
+      border: 1px solid var(--border-color); background: var(--bg-secondary);
+    }
+    .agents-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <main class="agents-shell">
+    <div class="agents-top">
+      <a class="agents-back" href="/" aria-label="Back">
+        <span class="material-symbols-outlined" aria-hidden="true">&#xE5C4;</span>
+      </a>
+      <h1 class="agents-title">Manage Agents</h1>
+    </div>
+    <div id="agents-empty" class="agent-empty">No agents yet. Create one with +</div>
+    <section id="agents-grid" class="agents-grid"></section>
+  </main>
+
+  <button id="fab" class="agents-fab" aria-label="Create agent">
+    <span class="material-symbols-outlined" aria-hidden="true">&#xE145;</span>
+  </button>
+
+  <div id="modal" class="agents-modal" role="dialog" aria-modal="true">
+    <form id="create-form" class="agents-sheet">
+      <h2>Create Agent</h2>
+      <label for="agent-tag">Agent Tag</label>
+      <input id="agent-tag" placeholder="Agent 1" required />
+      <label for="agent-key">API Key</label>
+      <input id="agent-key" placeholder="Paste Gemini API key" required />
+      <label for="agent-soul">Agent Soul</label>
+      <textarea id="agent-soul" rows="3" placeholder="Add your agent's persona..."></textarea>
+      <div class="agents-actions">
+        <button type="button" class="btn secondary" id="cancel">Cancel</button>
+        <button type="submit" class="btn primary">Create</button>
+      </div>
+    </form>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js';
+    import { getDatabase, ref, get, push, set, update } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC0lb9VsaR09vuhPI1tVpmi_vtP9IMGwVM",
+      authDomain: "noogler-490414.firebaseapp.com",
+      databaseURL: "https://noogler-490414-default-rtdb.firebaseio.com",
+      projectId: "noogler-490414",
+      storageBucket: "noogler-490414.firebasestorage.app",
+      messagingSenderId: "265815053881",
+      appId: "1:265815053881:web:0bfa8a367670f4b04a1fe8",
+      measurementId: "G-BR5XWXZRVK"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const grid = document.getElementById('agents-grid');
+    const empty = document.getElementById('agents-empty');
+    const modal = document.getElementById('modal');
+    const fab = document.getElementById('fab');
+    const form = document.getElementById('create-form');
+    const cancel = document.getElementById('cancel');
+    const tagInput = document.getElementById('agent-tag');
+    const keyInput = document.getElementById('agent-key');
+    const soulInput = document.getElementById('agent-soul');
+
+    let uid = null;
+
+    function openModal() { modal.classList.add('open'); }
+    function closeModal() { modal.classList.remove('open'); form.reset(); }
+
+    async function renderAgents() {
+      const snap = await get(ref(db, `users/${uid}/agents`));
+      const agents = snap.exists() ? Object.entries(snap.val()) : [];
+      grid.innerHTML = '';
+      empty.style.display = agents.length ? 'none' : 'block';
+      agents.forEach(([id, item]) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'agent-card';
+        card.innerHTML = `
+          <h3>${item.agent_tag || 'Agent 1'}</h3>
+          <p>${(item.agent_soul || 'No soul yet').slice(0, 90)}</p>
+          <p>${item.gemini_api_key ? 'API key saved' : 'No API key'}</p>
+        `;
+        card.onclick = async () => {
+          await set(ref(db, `users/${uid}/active_agent_id`), id);
+          window.location.href = `/chat.html?agentId=${encodeURIComponent(id)}`;
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    fab.onclick = openModal;
+    cancel.onclick = closeModal;
+    modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      if (!uid) return;
+      const now = Date.now();
+      const payload = {
+        agent_tag: (tagInput.value || 'Agent 1').trim() || 'Agent 1',
+        gemini_api_key: keyInput.value.trim(),
+        agent_soul: soulInput.value.trim(),
+        created_at: now,
+        updated_at: now
+      };
+      const node = push(ref(db, `users/${uid}/agents`));
+      await set(node, payload);
+      await update(ref(db, `users/${uid}`), { active_agent_id: node.key });
+      closeModal();
+      await renderAgents();
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = '/';
+        return;
+      }
+      uid = user.uid;
+      await renderAgents();
+    });
+  </script>
+</body>
+</html>

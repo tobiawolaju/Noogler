@@ -9,6 +9,7 @@
   import MobilePanel from "./components/MobilePanel.svelte";
 
   let currentUser = null;
+  const selectedAgentId = new URLSearchParams(window.location.search).get("agentId") || "";
   $: userFirstName = currentUser?.displayName
     ? currentUser.displayName.split(" ")[0]
     : "User";
@@ -121,7 +122,11 @@
       connected = true;
       reconnectAttempts = 0;
       // Send handshake exactly as backend expects
-      ws.send(JSON.stringify({ type: "frontend_handshake", user_uid: currentUser.uid }));
+      ws.send(JSON.stringify({
+        type: "frontend_handshake",
+        user_uid: currentUser.uid,
+        agent_id: selectedAgentId || undefined
+      }));
     });
 
     ws.addEventListener("close", () => {

@@ -2,7 +2,7 @@ import "dotenv/config";
 import { createServer } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import { handleMessage, startLiveSession, sendAudioChunk, endLiveSession } from "./agent.js";
-import { getHistory, getUserSettings, updateUserSettings } from "./db.js";
+import { getHistory, getUserSettings, updateUserSettings, setActiveAgentId, getActiveAgentId } from "./db.js";
 
 const PORT = Number(process.env.PORT || process.env.BACKEND_PORT || 8080);
 const LOG_LEVEL = (process.env.LOG_LEVEL || "info").toLowerCase();
@@ -51,6 +51,7 @@ wss.on("connection", (ws) => {
   let isFrontend = false;
   let clientUid: string | null = null;
   let deviceId: string | null = null;
+  let frontendAgentId: string | null = null;
 
   log("info", "New client connected. Waiting for handshake...");
 
@@ -72,7 +73,7 @@ wss.on("connection", (ws) => {
     }
   });
 
-  ws.on("message", (data) => {
+  ws.on("message", async (data) => {
     let msg: any;
     try {
       msg = JSON.parse(data.toString());
@@ -105,6 +106,21 @@ wss.on("connection", (ws) => {
       isFrontend = true;
       clientUid = msg.user_uid;
       if (clientUid) {
+        const requestedAgentId = typeof msg.agent_id === "string" ? msg.agent_id.trim() : "";
+        if (requestedAgentId) {
+          try {
+            await setActiveAgentId(clientUid, requestedAgentId);
+          } catch (err) {
+            log("error", "Failed to set active agent", err);
+          }
+          frontendAgentId = requestedAgentId;
+        } else {
+          try {
+            frontendAgentId = await getActiveAgentId(clientUid);
+          } catch {
+            frontendAgentId = null;
+          }
+        }
         if (!frontendsByUid.has(clientUid)) {
           frontendsByUid.set(clientUid, new Set());
         }
@@ -117,7 +133,8 @@ wss.on("connection", (ws) => {
               type: "user_settings",
               has_gemini_api_key: Boolean(settings.gemini_api_key),
               agent_tag: settings.agent_tag,
-              agent_soul: settings.agent_soul
+              agent_soul: settings.agent_soul,
+              agent_id: frontendAgentId
             }));
           })
           .catch((err) => log("error", "Failed to load user settings", err));
