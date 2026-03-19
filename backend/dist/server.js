@@ -2,7 +2,7 @@ import "dotenv/config";
 import { createServer } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import { handleMessage, startLiveSession, sendAudioChunk, endLiveSession } from "./agent.js";
-import { getHistory } from "./db.js";
+import { getHistory, getUserGeminiApiKey, setUserGeminiApiKey } from "./db.js";
 const PORT = Number(process.env.PORT || process.env.BACKEND_PORT || 8080);
 const LOG_LEVEL = (process.env.LOG_LEVEL || "info").toLowerCase();
 const LOG_LEVELS = { debug: 10, info: 20, warn: 30, error: 40 };
@@ -98,6 +98,14 @@ wss.on("connection", (ws) => {
                 frontendsByUid.get(clientUid).add(ws);
                 log("info", `Frontend registered for UID=${clientUid}`);
                 ws.send(JSON.stringify(makeEvent("backend_ready", "ok", "Backend connected")));
+                getUserGeminiApiKey(clientUid)
+                    .then((apiKey) => {
+                    ws.send(JSON.stringify({
+                        type: "user_settings",
+                        has_gemini_api_key: Boolean(apiKey)
+                    }));
+                })
+                    .catch((err) => log("error", "Failed to load user settings", err));
                 getHistory(clientUid).then(history => {
                     if (history && history.length > 0) {
                         const historyEvents = history.map(turn => {
@@ -142,19 +150,43 @@ wss.on("connection", (ws) => {
             return;
         }
         if (isFrontend) {
-            const agentWs = agentsByUid.get(clientUid);
+            if (!clientUid) {
+                ws.send(JSON.stringify({ type: "error", error: "Must send handshake first" }));
+                return;
+            }
+            const uid = clientUid;
+            const agentWs = agentsByUid.get(uid);
             if (msg.type === "start_call") {
-                log("info", `Frontend -> LiveProxy started for UID=${clientUid}`, {});
-                startLiveSession(clientUid, ws);
+                log("info", `Frontend -> LiveProxy started for UID=${uid}`, {});
+                startLiveSession(uid, ws);
                 return;
             }
             if (msg.type === "end_call") {
-                log("info", `Frontend -> LiveProxy ended for UID=${clientUid}`, {});
-                endLiveSession(clientUid);
+                log("info", `Frontend -> LiveProxy ended for UID=${uid}`, {});
+                endLiveSession(uid);
                 return;
             }
             if (msg.type === "audio_chunk") {
-                sendAudioChunk(clientUid, msg.data);
+                sendAudioChunk(uid, msg.data);
+                return;
+            }
+            if (msg.type === "update_settings") {
+                const nextApiKey = typeof msg.gemini_api_key === "string" ? msg.gemini_api_key : "";
+                setUserGeminiApiKey(uid, nextApiKey)
+                    .then(() => {
+                    endLiveSession(uid);
+                    ws.send(JSON.stringify({
+                        type: "settings_updated",
+                        has_gemini_api_key: Boolean(nextApiKey.trim())
+                    }));
+                })
+                    .catch((err) => {
+                    log("error", "Failed to update user settings", err);
+                    ws.send(JSON.stringify({
+                        type: "agent_error",
+                        detail: "Failed to save settings."
+                    }));
+                });
                 return;
             }
             if (msg.type === "commands" && Array.isArray(msg.commands)) {

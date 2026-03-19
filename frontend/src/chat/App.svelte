@@ -23,6 +23,8 @@
 
   let instruction = "";
   let tag = "ws";
+  let apiKey = "";
+  let hasApiKey = false;
   let index = 1;
 
   let events = [];
@@ -135,6 +137,14 @@
         const data = JSON.parse(event.data);
         if (data.type === "history_sync") {
           events = [...data.events, ...events].slice(-200);
+        } else if (data.type === "user_settings") {
+          hasApiKey = Boolean(data.has_gemini_api_key);
+          if (!hasApiKey) apiKey = "";
+        } else if (data.type === "settings_updated") {
+          hasApiKey = Boolean(data.has_gemini_api_key);
+          if (hasApiKey) {
+            apiKey = "";
+          }
         } else {
           events = [...events, data].slice(-200);
         }
@@ -194,6 +204,18 @@
   const sendPing = () => {
     if (!connected || !ws) return;
     ws.send(JSON.stringify({ type: "ping" }));
+  };
+
+  const commitApiKey = (value) => {
+    if (!connected || !ws) {
+      lastError = "Connect first to save API key";
+      return;
+    }
+    const nextKey = typeof value === "string" ? value.trim() : "";
+    ws.send(JSON.stringify({
+      type: "update_settings",
+      gemini_api_key: nextKey
+    }));
   };
 
   const scheduleReconnect = () => {
@@ -295,10 +317,13 @@
     {connected}
     bind:wsUrl
     bind:tag
+    bind:apiKey
+    {hasApiKey}
     {lastError}
     onClose={closePanel}
     onConnect={connect}
     onDisconnect={disconnect}
     onPing={sendPing}
+    onApiKeyCommit={commitApiKey}
   />
 </div>

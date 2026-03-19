@@ -37,9 +37,10 @@ if (!admin.apps.length) {
     }
 }
 const db = admin.database();
+const userRef = (uid) => db.ref(`users/${uid}`);
 export async function getHistory(uid) {
     try {
-        const snapshot = await db.ref(`users/${uid}/history`).once("value");
+        const snapshot = await userRef(uid).child("history").once("value");
         const val = snapshot.val();
         if (Array.isArray(val)) {
             return val;
@@ -57,7 +58,7 @@ export async function appendHistory(uid, role, text) {
     try {
         if (!text.trim())
             return;
-        const historyRef = db.ref(`users/${uid}/history`);
+        const historyRef = userRef(uid).child("history");
         const snapshot = await historyRef.once("value");
         let currentHistory = snapshot.val() || [];
         if (!Array.isArray(currentHistory) && typeof currentHistory === "object") {
@@ -72,5 +73,25 @@ export async function appendHistory(uid, role, text) {
     }
     catch (err) {
         console.error(`[DB] Failed to append history for UID=${uid}`, err);
+    }
+}
+export async function getUserGeminiApiKey(uid) {
+    try {
+        const snapshot = await userRef(uid).child("gemini_api_key").once("value");
+        const value = snapshot.val();
+        return typeof value === "string" ? value.trim() : "";
+    }
+    catch (err) {
+        console.error(`[DB] Failed to get Gemini API key for UID=${uid}`, err);
+        return "";
+    }
+}
+export async function setUserGeminiApiKey(uid, apiKey) {
+    try {
+        await userRef(uid).child("gemini_api_key").set(apiKey.trim());
+    }
+    catch (err) {
+        console.error(`[DB] Failed to set Gemini API key for UID=${uid}`, err);
+        throw err;
     }
 }

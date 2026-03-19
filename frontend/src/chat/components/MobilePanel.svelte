@@ -4,11 +4,19 @@
   export let connected = false;
   export let wsUrl = "";
   export let tag = "";
+  export let apiKey = "";
+  export let hasApiKey = false;
   export let lastError = "";
   export let onClose = () => {};
   export let onConnect = () => {};
   export let onDisconnect = () => {};
   export let onPing = () => {};
+  export let onApiKeyCommit = (_value) => {};
+
+  let editingApiKey = false;
+
+  $: apiKeyDisplay = editingApiKey ? apiKey : (hasApiKey ? "xxxxxxxxxxx" : "");
+  $: if (hasApiKey && !apiKey) editingApiKey = false;
 </script>
 
 {#if visible}
@@ -36,6 +44,34 @@
       <div class="wa-settings-group">
         <label for="agent-tag">Agent Tag</label>
         <input id="agent-tag" bind:value={tag} placeholder="e.g. ws, dev, test" />
+      </div>
+
+      <div class="wa-settings-group">
+        <label for="gemini-api-key">API Key (Gemini)</label>
+        <input
+          id="gemini-api-key"
+          type="text"
+          value={apiKeyDisplay}
+          placeholder="Paste Gemini API key"
+          on:focus={() => {
+            if (!editingApiKey) editingApiKey = true;
+          }}
+          on:input={(e) => {
+            apiKey = e.currentTarget.value;
+            editingApiKey = true;
+          }}
+          on:paste={(e) => {
+            setTimeout(() => {
+              apiKey = e.currentTarget.value;
+              editingApiKey = true;
+              onApiKeyCommit(apiKey);
+              e.currentTarget.blur();
+            }, 0);
+          }}
+          on:blur={() => {
+            if (editingApiKey) onApiKeyCommit(apiKey);
+          }}
+        />
       </div>
 
       {#if lastError}

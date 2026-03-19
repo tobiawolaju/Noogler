@@ -1,14 +1,9 @@
 import "dotenv/config";
 import WebSocket from "ws";
-import { getHistory, appendHistory } from "./db.js";
+import { getHistory, appendHistory, getUserGeminiApiKey } from "./db.js";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
 const HOST = "generativelanguage.googleapis.com";
-
-if (!GEMINI_API_KEY) {
-  console.warn("WARNING: GEMINI_API_KEY is not set. The agent will not function properly.");
-}
 
 export type AgentResponse =
   | { type: "conversation"; text: string }
@@ -68,7 +63,12 @@ export async function handleMessage(uid: string, text: string): Promise<AgentRes
   history.push({ role: "user", parts: [{ text }] });
   await appendHistory(uid, "user", text);
 
-  const url = `https://${HOST}/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+  const userApiKey = await getUserGeminiApiKey(uid);
+  if (!userApiKey) {
+    return { type: "conversation", text: "Gemini API key is missing. Add your key in Dashboard settings." };
+  }
+
+  const url = `https://${HOST}/v1beta/models/${GEMINI_MODEL}:generateContent?key=${userApiKey}`;
 
   const body = {
     system_instruction: { parts: { text: TEXT_SYSTEM_PROMPT } },
@@ -127,8 +127,17 @@ export async function startLiveSession(uid: string, frontendWs: WebSocket) {
 
   console.log(`[LiveProxy] Starting Gemini Live session for UID=${uid}`);
 
-  const key = process.env.GEMINI_API_KEY || GEMINI_API_KEY;
-  const wsUrl = `wss://${HOST}/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${key}`;
+  const userApiKey = await getUserGeminiApiKey(uid);
+  if (!userApiKey) {
+    if (frontendWs.readyState === WebSocket.OPEN) {
+      frontendWs.send(JSON.stringify({
+        type: "chat_reply",
+        text: "Gemini API key is missing. Add your key in Dashboard settings."
+      }));
+    }
+    return;
+  }
+  const wsUrl = `wss://${HOST}/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${userApiKey}`;
 
   const geminiWs = new WebSocket(wsUrl);
 
