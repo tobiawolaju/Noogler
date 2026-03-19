@@ -121,18 +121,24 @@
       margin-left: 2px;
     }
 
-    /* loading spinner */
-    .spinner {
-      width: 20px;
-      height: 20px;
-      border: 2px solid rgba(0, 0, 0, 0.1);
-      border-top-color: var(--text-primary);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+    .landing-skeleton {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .sk-line {
+      border-radius: 12px;
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: sk-shimmer 1.2s ease-in-out infinite;
+    }
+    .sk-title { height: 48px; width: 70%; }
+    .sk-text { height: 16px; width: 100%; }
+    .sk-text.short { width: 86%; }
+    .sk-btn { height: 52px; width: 100%; }
+    @keyframes sk-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
     .hidden { display: none !important; }
@@ -149,18 +155,24 @@
     </div>
 
     <main class="hero">
-      <h1>Noogler</h1>
-      <p class="lead">
-        Your AI intern, that can operate your desktop like a human operator — eyes, ears, hands, and a calm reporting
-        voice, whatever you can do on your pc, he can do and you can both work together
-      </p>
+      <div id="hero-loading" class="landing-skeleton">
+        <div class="sk-line sk-title"></div>
+        <div class="sk-line sk-text"></div>
+        <div class="sk-line sk-text short"></div>
+      </div>
+      <div id="hero-content" class="hidden">
+        <h1>Noogler</h1>
+        <p class="lead">
+          Your AI intern, that can operate your desktop like a human operator — eyes, ears, hands, and a calm reporting
+          voice, whatever you can do on your pc, he can do and you can both work together
+        </p>
+      </div>
     </main>
 
     <div class="cta-area">
       <div id="state-loading">
-        <button class="btn primary" style="width: 100%;" disabled>
-          <span class="spinner" style="border-top-color: white;"></span>
-        </button>
+        <div class="sk-line sk-btn"></div>
+        <div class="sk-line sk-btn"></div>
       </div>
 
       <!-- State: Not signed in -->
@@ -208,6 +220,8 @@
     const provider = new GoogleAuthProvider();
 
     const signoutChip = document.getElementById('signout-chip');
+    const heroLoading = document.getElementById('hero-loading');
+    const heroContent = document.getElementById('hero-content');
     const chipAvatar = document.getElementById('chip-avatar');
     const chipName = document.getElementById('chip-name');
     const stateLoading = document.getElementById('state-loading');
@@ -218,6 +232,8 @@
     let currentUser = null;
 
     function showLoggedOut() {
+      if (heroLoading) heroLoading.classList.add('hidden');
+      if (heroContent) heroContent.classList.remove('hidden');
       stateLoading.classList.add('hidden');
       btnGoogle.classList.remove('hidden');
       navPane.classList.add('hidden');
@@ -229,6 +245,8 @@
       chipAvatar.src = user.photoURL || '';
       chipName.textContent = (user.displayName || user.email || 'You').split(' ')[0];
 
+      if (heroLoading) heroLoading.classList.add('hidden');
+      if (heroContent) heroContent.classList.remove('hidden');
       stateLoading.classList.add('hidden');
       btnGoogle.classList.add('hidden');
       navPane.classList.remove('hidden');

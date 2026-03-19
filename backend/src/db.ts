@@ -259,3 +259,21 @@ export async function createAgent(uid: string, payload: UserSettings): Promise<A
     throw err;
   }
 }
+
+export async function deleteActiveAgent(uid: string): Promise<{ deleted_agent_id: string; active_agent_id: string }> {
+  const activeId = await getActiveAgentId(uid);
+  try {
+    await agentRef(uid, activeId).remove();
+    const remaining = await listAgents(uid);
+    if (remaining.length > 0) {
+      const nextActive = remaining[0].id;
+      await userRef(uid).child("active_agent_id").set(nextActive);
+      return { deleted_agent_id: activeId, active_agent_id: nextActive };
+    }
+    await setActiveAgentId(uid, DEFAULT_AGENT_ID);
+    return { deleted_agent_id: activeId, active_agent_id: DEFAULT_AGENT_ID };
+  } catch (err) {
+    console.error(`[DB] Failed to delete active agent for UID=${uid}`, err);
+    throw err;
+  }
+}

@@ -16,6 +16,7 @@
   export let onTagCommit = (_value) => {};
   export let onSoulCommit = (_value) => {};
   export let onSoulInput = (_value) => {};
+  export let onDeleteAgent = () => {};
 
   let editingApiKey = false;
 
@@ -102,6 +103,11 @@
         </div>
       {/if}
 
+      <div class="wa-nav-links">
+        <a class="btn secondary" href="/agents.html">Manage Agents</a>
+        <a class="btn secondary" href="/">Home</a>
+      </div>
+
       <div class="wa-panel-actions">
         {#if !connected}
           <button class="btn primary" on:click={onConnect}>Connect</button>
@@ -110,6 +116,8 @@
         {/if}
         <button class="btn secondary" on:click={onPing} disabled={!connected}>Test Ping</button>
       </div>
+
+      <button class="btn danger wa-delete-full" on:click={onDeleteAgent}>Delete Agent</button>
     </div>
   </div>
 {/if}

@@ -2,7 +2,7 @@ import "dotenv/config";
 import { createServer } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import { handleMessage, startLiveSession, sendAudioChunk, endLiveSession } from "./agent.js";
-import { getHistory, getUserSettings, updateUserSettings, setActiveAgentId, getActiveAgentId } from "./db.js";
+import { getHistory, getUserSettings, updateUserSettings, setActiveAgentId, getActiveAgentId, deleteActiveAgent } from "./db.js";
 
 const PORT = Number(process.env.PORT || process.env.BACKEND_PORT || 8080);
 const LOG_LEVEL = (process.env.LOG_LEVEL || "info").toLowerCase();
@@ -229,6 +229,26 @@ wss.on("connection", (ws) => {
             ws.send(JSON.stringify({
               type: "agent_error",
               detail: "Failed to save settings."
+            }));
+          });
+        return;
+      }
+
+      if (msg.type === "delete_active_agent") {
+        deleteActiveAgent(uid)
+          .then((result) => {
+            endLiveSession(uid);
+            ws.send(JSON.stringify({
+              type: "agent_deleted",
+              deleted_agent_id: result.deleted_agent_id,
+              active_agent_id: result.active_agent_id
+            }));
+          })
+          .catch((err) => {
+            log("error", "Failed to delete active agent", err);
+            ws.send(JSON.stringify({
+              type: "agent_error",
+              detail: "Failed to delete agent."
             }));
           });
         return;

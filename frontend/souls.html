@@ -61,10 +61,38 @@
       font-size: 22px;
       font-variation-settings: "FILL" 1, "wght" 500, "GRAD" 0, "opsz" 24;
     }
+    .souls-skeleton {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: opacity .25s ease;
+    }
+    .souls-skeleton.hide { opacity: 0; pointer-events: none; }
+    .sk {
+      border-radius: 12px;
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: sk-shimmer 1.2s ease-in-out infinite;
+    }
+    .sk-sm { width: 42px; height: 42px; border-radius: 999px; }
+    .sk-title { height: 28px; width: 48%; }
+    .sk-card { height: 110px; }
+    @keyframes sk-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
   </style>
 </head>
 <body>
   <main class="souls-page">
+    <div id="souls-skeleton" class="souls-skeleton">
+      <div class="sk sk-sm"></div>
+      <div class="sk sk-title"></div>
+      <div class="sk sk-card"></div>
+      <div class="sk sk-card"></div>
+      <div class="sk sk-card"></div>
+    </div>
+    <div id="souls-content" style="display:none;">
     <a class="souls-back" href="/chat.html" aria-label="Back to chat" title="Back to chat">
       <span class="material-symbols-outlined" aria-hidden="true">&#xE5C4;</span>
     </a>
@@ -87,6 +115,18 @@
       <p><strong>Example:</strong></p>
       <p>"You are a practical desktop assistant. Keep replies short, confirm unclear instructions, and prioritize safe actions. Explain only what changed and what to do next."</p>
     </section>
+    </div>
   </main>
+  <script>
+    const sk = document.getElementById("souls-skeleton");
+    const content = document.getElementById("souls-content");
+    requestAnimationFrame(() => {
+      if (content) content.style.display = "";
+      if (sk) {
+        sk.classList.add("hide");
+        setTimeout(() => sk.remove(), 260);
+      }
+    });
+  </script>
 </body>
 </html>

@@ -10,6 +10,7 @@
 
   let currentUser = null;
   const selectedAgentId = new URLSearchParams(window.location.search).get("agentId") || "";
+  const openPanelOnLoad = new URLSearchParams(window.location.search).get("openPanel") === "1";
   $: userFirstName = currentUser?.displayName
     ? currentUser.displayName.split(" ")[0]
     : "User";
@@ -164,6 +165,8 @@
           if (hasApiKey) {
             apiKey = "";
           }
+        } else if (data.type === "agent_deleted") {
+          window.location.href = "/agents.html";
         } else {
           events = [...events, data].slice(-200);
         }
@@ -274,6 +277,15 @@
     }, 700);
   };
 
+  const deleteCurrentAgent = () => {
+    if (!connected || !ws) {
+      lastError = "Connect first to delete agent";
+      return;
+    }
+    if (!confirm("Delete this agent? This removes its settings and chat history.")) return;
+    ws.send(JSON.stringify({ type: "delete_active_agent" }));
+  };
+
   const scheduleReconnect = () => {
     if (!shouldReconnect) return;
     if (reconnectTimer) return;
@@ -314,6 +326,7 @@
   let authUnsubscribe;
 
   onMount(() => {
+    if (openPanelOnLoad) showMobilePanel = true;
     authUnsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         currentUser = user;
@@ -388,5 +401,6 @@
     onTagCommit={commitTag}
     onSoulCommit={commitSoul}
     onSoulInput={queueSoulCommit}
+    onDeleteAgent={deleteCurrentAgent}
   />
 </div>
