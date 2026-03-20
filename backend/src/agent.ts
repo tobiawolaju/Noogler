@@ -12,6 +12,8 @@ export type AgentResponse =
   | { type: "conversation"; text: string }
   | { type: "commands"; text: string; commands: any[] };
 
+type GeneratedCommand = { index: number; instruction: string; tag: "ai" };
+
 // Maintain active Gemini connections per user UID
 const activeSessions = new Map<string, WebSocket>();
 
@@ -21,6 +23,32 @@ const TEXT_SYSTEM_PROMPT = readFileSync(
   join(__dirname, "../prompts/system_prompt.txt"),
   "utf8"
 ).trim();
+
+function extractOpenTarget(input: string): string | null {
+  const m = input.trim().match(/^open\s+(.+)$/i);
+  if (!m) return null;
+  const target = (m[1] || "").trim();
+  return target || null;
+}
+
+function normalizeAppTarget(target: string): string {
+  const t = target.toLowerCase().trim();
+  if (["cli", "cmd", "command prompt", "terminal"].includes(t)) return "command prompt";
+  if (["edge", "microsoft edge", "ms edge"].includes(t)) return "microsoft edge";
+  return target.trim();
+}
+
+function buildOpenAppCommands(rawTarget: string): GeneratedCommand[] {
+  const target = normalizeAppTarget(rawTarget);
+  return [
+    { index: 1, instruction: "hotkey: CTRL+ESC", tag: "ai" },
+    { index: 2, instruction: "wait 900", tag: "ai" },
+    { index: 3, instruction: `type: ${target}`, tag: "ai" },
+    { index: 4, instruction: "wait 700", tag: "ai" },
+    { index: 5, instruction: "key: ENTER", tag: "ai" },
+    { index: 6, instruction: "wait 1000", tag: "ai" }
+  ];
+}
 
 export async function handleMessage(uid: string, text: string): Promise<AgentResponse> {
   // Check if there is an active Live session
@@ -43,6 +71,14 @@ export async function handleMessage(uid: string, text: string): Promise<AgentRes
   // Add the new user message
   history.push({ role: "user", parts: [{ text }] });
   await appendHistory(uid, "user", text);
+
+  const openTarget = extractOpenTarget(text);
+  if (openTarget) {
+    const commands = buildOpenAppCommands(openTarget);
+    const reply = `Opening ${normalizeAppTarget(openTarget)} for you.`;
+    await appendHistory(uid, "model", reply);
+    return { type: "commands", text: reply, commands };
+  }
 
   const userApiKey = await getUserGeminiApiKey(uid);
   if (!userApiKey) {
