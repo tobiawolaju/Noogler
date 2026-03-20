@@ -46,6 +46,9 @@
   --radius-lg: 16px;
   --radius-xl: 24px;
   --radius-full: 9999px;
+  --motion-fast: 140ms;
+  --motion-mid: 220ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
   /* Shadow */
   --shadow-sm: none;
@@ -177,7 +180,7 @@ input {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
-  transition: background-color 0.2s, transform 0.15s ease;
+  transition: background-color var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
 }
 
 .wa-icon-btn:active {
@@ -282,6 +285,7 @@ input {
   border: 1px solid var(--border-color);
   box-shadow: none;
   position: relative;
+  animation: waBubbleIn var(--motion-mid) var(--ease-standard);
 }
 
 .from-body .wa-bubble {
@@ -334,7 +338,7 @@ input {
   gap: var(--space-xs);
   margin-top: var(--space-xxs);
   opacity: 0.5;
-  transition: opacity 0.2s;
+  transition: opacity var(--motion-fast) var(--ease-standard);
 }
 
 .wa-bubble-wrap:hover .wa-bubble-actions,
@@ -586,10 +590,11 @@ input {
 .wa-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.24);
   z-index: 100;
   display: flex;
   align-items: flex-end;
+  animation: waFadeIn var(--motion-mid) var(--ease-standard);
 }
 
 .wa-panel {
@@ -605,6 +610,7 @@ input {
   overflow-y: auto;
   position: relative;
   box-shadow: none;
+  animation: waSheetUp var(--motion-mid) var(--ease-standard);
 }
 
 @media (min-width: 900px) {
@@ -748,7 +754,7 @@ input {
   font-weight: 600;
   font-size: var(--text-sm);
   text-align: center;
-  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: transform var(--motion-fast) var(--ease-standard), background-color var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard);
 }
 
 .btn:hover {}
@@ -781,6 +787,33 @@ input {
 
 .wa-delete-full {
   width: 100%;
+}
+
+@keyframes waBubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes waFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes waSheetUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .wa-system-row {

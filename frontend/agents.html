@@ -93,13 +93,15 @@
       text-align: left;
       align-items: flex-start;
       position: relative;
-      transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+      transition: transform var(--motion-fast), background-color var(--motion-fast), border-color var(--motion-fast);
       box-shadow: none;
+      animation: cardIn .22s ease-out;
     }
     .agent-card:hover {
       transform: translateY(-1px);
       box-shadow: none;
-      border-color: rgba(37, 99, 235, .35);
+      border-color: rgba(37, 99, 235, .28);
+      background: #fcfdfd;
     }
     .agent-more {
       position: absolute;
@@ -142,13 +144,14 @@
       padding: 0;
       z-index: 60;
     }
-    .agents-modal.open { display: flex; }
+    .agents-modal.open { display: flex; animation: fadeIn .2s ease-out; }
     .agents-sheet {
       width: 100%; background: var(--bg-secondary); border-radius: 16px 16px 0 0;
       padding: 14px; display: flex; flex-direction: column; gap: 10px;
       max-height: 92vh; overflow: auto;
       box-shadow: none;
       z-index: 61;
+      animation: sheetUp .22s ease-out;
     }
     .agents-sheet h2 { margin: 0 0 4px; font-size: 1.05rem; }
     .agents-sheet label { font-size: .78rem; color: var(--text-secondary); font-weight: 600; }
@@ -157,6 +160,9 @@
       border: 1px solid var(--border-color); background: var(--bg-secondary);
     }
     .agents-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes sheetUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
     @media (min-width: 900px) {
       .agents-modal {
