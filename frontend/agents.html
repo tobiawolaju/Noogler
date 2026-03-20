@@ -13,10 +13,8 @@
   <link rel="stylesheet" href="/src/shared/styles.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
-    html, body {
+    body {
       background: var(--bg-primary);
-      overflow-y: auto !important;
-      height: auto !important;
     }
     
     .search-container {
@@ -72,6 +70,10 @@
       max-width: 1080px;
       margin: 0 auto;
       padding: 20px 16px 100px;
+      height: 100vh;
+      height: 100dvh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .signout-chip {
