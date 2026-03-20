@@ -78,6 +78,8 @@
       background: #109545;
       justify-content: center;
       gap: 14px;
+      align-items: center;
+      text-align: center;
     }
 
     .cards-title {
@@ -95,6 +97,7 @@
       border-radius: 18px;
       padding: 18px;
       border: 1px solid rgba(9, 57, 31, 0.12);
+      text-align: center;
     }
 
     .steps-grid {
@@ -128,6 +131,41 @@
       color: #28563f;
       line-height: 1.45;
       font-size: 0.95rem;
+    }
+
+    .chat-preview {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .chat-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .chat-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 1px solid rgba(9, 57, 31, 0.12);
+      background: #eaf7ef;
+      flex-shrink: 0;
+    }
+
+    .chat-bubble {
+      margin: 0;
+      background: #f2fff6;
+      border: 1px solid rgba(9, 57, 31, 0.1);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      line-height: 1.35;
+      color: #19462e;
     }
 
     .panel-cta {
@@ -244,6 +282,15 @@
       .step-card p {
         font-size: 1.02rem;
       }
+
+      .chat-avatar {
+        width: 36px;
+        height: 36px;
+      }
+
+      .chat-bubble {
+        font-size: 0.95rem;
+      }
     }
   </style>
 </head>
@@ -262,17 +309,35 @@
         <article class="step-card">
           <span class="step-number">1</span>
           <h3>Create an agent</h3>
-          <p>Set up a focused AI worker in seconds.</p>
+          <p>Spin up focused AI interns for real tasks.</p>
+          <div class="chat-preview">
+            <div class="chat-row">
+              <img class="chat-avatar" src="https://api.dicebear.com/9.x/bottts/png?seed=dev-agent" alt="Developer bot avatar" />
+              <p class="chat-bubble">I just pulled a git request, check it.</p>
+            </div>
+          </div>
         </article>
         <article class="step-card">
           <span class="step-number">2</span>
           <h3>Assign a role</h3>
-          <p>Give it a clear mission and expected behavior.</p>
+          <p>Each bot reports updates like a teammate.</p>
+          <div class="chat-preview">
+            <div class="chat-row">
+              <img class="chat-avatar" src="https://api.dicebear.com/9.x/bottts/png?seed=game-agent" alt="Game bot avatar" />
+              <p class="chat-bubble">I am done building the game, should I deploy now?</p>
+            </div>
+          </div>
         </article>
         <article class="step-card">
           <span class="step-number">3</span>
           <h3>Watch it replicate labor</h3>
-          <p>It executes tasks, reports progress, and adapts.</p>
+          <p>Track both technical and growth outcomes in one place.</p>
+          <div class="chat-preview">
+            <div class="chat-row">
+              <img class="chat-avatar" src="https://api.dicebear.com/9.x/bottts/png?seed=marketing-agent" alt="Marketing bot avatar" />
+              <p class="chat-bubble">We gained 40 more investors and dropped to 75% equity from cold DMing, should I continue?</p>
+            </div>
+          </div>
         </article>
       </div>
     </section>
