@@ -2,6 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebas
 import {
   getAuth,
   GoogleAuthProvider,
+  getRedirectResult,
+  signInWithRedirect,
   signInWithPopup,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
@@ -34,10 +36,28 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 const btnGoogle = document.getElementById("btn-google");
+const btnGoogleLabel = document.getElementById("btn-google-label");
+const btnGoogleSpinner = document.getElementById("btn-google-spinner");
+const signinStatus = document.getElementById("signin-status");
 const landingFlow = document.getElementById("landing-flow");
+const isAndroid = /Android/i.test(navigator.userAgent || "");
+
+function setStatus(message) {
+  if (!signinStatus) return;
+  signinStatus.textContent = message;
+}
+
+function setLoading(isLoading) {
+  if (!btnGoogle) return;
+  btnGoogle.disabled = isLoading;
+  btnGoogle.classList.toggle("is-loading", isLoading);
+  if (btnGoogleLabel) btnGoogleLabel.textContent = isLoading ? "Connecting..." : "Sign in with Google";
+  if (btnGoogleSpinner) btnGoogleSpinner.classList.toggle("hidden", !isLoading);
+}
 
 function showSignedOut() {
   if (btnGoogle) btnGoogle.classList.remove("hidden");
+  setLoading(false);
 }
 
 function redirectToAgents() {
@@ -58,18 +78,27 @@ onAuthStateChanged(auth, (user) => {
   showSignedOut();
 });
 
+getRedirectResult(auth).catch((e) => {
+  console.error(e);
+  setLoading(false);
+  setStatus("Sign-in failed. Please try again.");
+});
+
 if (btnGoogle) {
   btnGoogle.onclick = async () => {
-    const original = btnGoogle.innerHTML;
-    btnGoogle.disabled = true;
-    btnGoogle.innerHTML = "<span class='spinner'></span>";
+    setStatus("");
+    setLoading(true);
     try {
+      if (isAndroid) {
+        setStatus("Opening Google sign-in...");
+        await signInWithRedirect(auth, provider);
+        return;
+      }
       await signInWithPopup(auth, provider);
-      redirectToAgents();
     } catch (e) {
       console.error(e);
-      btnGoogle.disabled = false;
-      btnGoogle.innerHTML = original;
+      setLoading(false);
+      setStatus("Sign-in failed. Please try again.");
     }
   };
 }
