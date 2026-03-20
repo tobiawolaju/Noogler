@@ -4,6 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#25d366" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <title>Noogler</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -27,7 +29,7 @@
     .chat-skeleton.hide { opacity: 0; pointer-events: none; }
     .sk {
       border-radius: 12px;
-      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background: #e2e8f0;
       background-size: 200% 100%;
       animation: sk-shimmer 1.2s ease-in-out infinite;
     }
@@ -48,6 +50,11 @@
     <div class="sk sk-input"></div>
   </div>
   <div id="app"></div>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+    }
+  </script>
   <script type="module" src="/src/chat/main.js"></script>
 </body>
 

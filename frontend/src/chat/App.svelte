@@ -32,6 +32,7 @@
   let index = 1;
 
   let events = [];
+  let showAgentTyping = false;
   let replyingTo = null;
   let feedEl;
   let inputEl;
@@ -170,6 +171,9 @@
         } else {
           events = [...events, data].slice(-200);
         }
+        if (data.type !== "outgoing") {
+          showAgentTyping = false;
+        }
         tickScroll();
       } catch (err) {
         events = [...events, { type: "raw", payload: event.data }].slice(-200);
@@ -218,6 +222,7 @@
     tickScroll();
 
     ws.send(JSON.stringify(payload));
+    showAgentTyping = true;
     index += 1;
     instruction = "";
     replyingTo = null;
@@ -359,6 +364,7 @@
 
     <Feed 
       {events} 
+      {showAgentTyping}
       bind:feedEl 
       userName={userFirstName} 
       onReply={handleReply} 

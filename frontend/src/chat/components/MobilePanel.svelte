@@ -32,8 +32,8 @@
       </button>
 
       <div class="panel-header">
-        <h1>Noogler Dashboard</h1>
-        <p style="opacity: 0.6; font-size: 0.9rem;">Configure your connection and monitor status</p>
+        <h1>Agent Control Center</h1>
+        <p style="opacity: 0.7; font-size: 0.9rem;">Manage connection, identity, and behavior for this agent.</p>
       </div>
 
       <div class="wa-status-row">

@@ -3,6 +3,9 @@
   export let feedEl;
   export let userName = "User";
   export let onReply = () => {};
+  export let showAgentTyping = false;
+
+  const isOutgoing = (event) => event?.type === "outgoing";
 </script>
 
 <section class="wa-feed" bind:this={feedEl}>
@@ -13,16 +16,16 @@
     </div>
   {:else}
     {#each events as event, i}
-      <div class="wa-bubble-wrap {event.type === 'outgoing' ? 'from-me' : 'from-body'}">
-        {#if i === 0 || events[i - 1].type !== event.type}
-          <div class="wa-bubble-tag">
-            {event.type === "outgoing" ? userName : "Agent"}
+      <div class="wa-bubble-wrap {isOutgoing(event) ? 'from-me' : 'from-body'}">
+        {#if i === 0 || isOutgoing(events[i - 1]) !== isOutgoing(event)}
+          <div class="wa-name-bubble">
+            {isOutgoing(event) ? userName : "Agent"}
           </div>
         {/if}
         
         <div class="wa-bubble-container">
           <div
-            class="wa-bubble {event.type === 'outgoing' ? 'from-me' : 'from-body'} {event.status === 'error' ? 'error' : 'ok'}"
+            class="wa-bubble {isOutgoing(event) ? 'from-me' : 'from-body'} {event.status === 'error' ? 'error' : 'ok'}"
           >
             {#if event.reply_to}
               <div class="wa-replied-msg">
@@ -32,7 +35,6 @@
 
             {#if event.type === "outgoing"}
               <strong>{event.text ?? event.instruction}</strong>
-              <small>Tag: {event.tag}</small>
             {:else if event.type === "chat_reply"}
               <span class="wa-chat-text">{event.text}</span>
             {:else if event.type === "pong"}
@@ -66,5 +68,18 @@
         </div>
       </div>
     {/each}
+
+    {#if showAgentTyping}
+      <div class="wa-bubble-wrap from-body">
+        <div class="wa-name-bubble">Agent</div>
+        <div class="wa-bubble-container">
+          <div class="wa-bubble from-body">
+            <div class="wa-typing-dots" aria-label="Agent is typing">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    {/if}
   {/if}
 </section>
