@@ -13,6 +13,32 @@
   <style>
     body { background: var(--bg-primary); }
     .agents-shell { max-width: 1080px; margin: 0 auto; padding: 20px 16px 100px; }
+    .signout-chip {
+      position: fixed;
+      right: 18px;
+      bottom: 84px;
+      z-index: 30;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-xs) var(--space-sm);
+      background-color: var(--bg-secondary);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+    }
+    .signout-chip img {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-full);
+    }
+    .signout-chip .signout-label {
+      color: var(--text-muted);
+      font-weight: 400;
+      margin-left: 2px;
+    }
     .agents-top {
       position: sticky;
       top: 0;
@@ -137,6 +163,12 @@
     <section id="agents-grid" class="agents-grid"></section>
   </main>
 
+  <div id="signout-chip" class="signout-chip">
+    <img id="chip-avatar" src="" alt="avatar" />
+    <span id="chip-name">Tobi</span>
+    <span class="signout-label">· Sign out</span>
+  </div>
+
   <button id="fab" class="agents-fab" aria-label="Create agent">
     <span class="material-symbols-outlined" aria-hidden="true">&#xE145;</span>
     <span>Add intern</span>
@@ -160,7 +192,7 @@
     }
 
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js';
     import { getDatabase, ref, get, push, set, update } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js';
 
     const firebaseConfig = {
@@ -184,6 +216,9 @@
     const form = document.getElementById('create-form');
     const cancel = document.getElementById('cancel');
     const tagInput = document.getElementById('agent-tag');
+    const signoutChip = document.getElementById('signout-chip');
+    const chipAvatar = document.getElementById('chip-avatar');
+    const chipName = document.getElementById('chip-name');
 
     let uid = null;
 
@@ -271,9 +306,13 @@
         window.location.href = '/';
         return;
       }
+      chipAvatar.src = user.photoURL || '';
+      chipName.textContent = (user.displayName || user.email || 'You').split(' ')[0];
       uid = user.uid;
       await renderAgents();
     });
+
+    signoutChip.onclick = () => signOut(auth);
   </script>
 </body>
 </html>
