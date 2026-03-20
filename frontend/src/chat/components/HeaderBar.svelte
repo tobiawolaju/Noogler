@@ -10,7 +10,10 @@
 </script>
 
 <header class="wa-header" on:click={onHeaderClick}>
-  <div class="wa-toolbar">
+  <div class="wa-toolbar" style="display: flex; align-items: center; gap: 8px;">
+    <a href="/agents.html" class="wa-back-btn" aria-label="Back to agents" on:click|stopPropagation>
+      <span class="material-symbols-outlined">&#xE5C4;</span>
+    </a>
     <div>
       <button
         type="button"
@@ -53,3 +56,25 @@
     </button>
   </div>
 </header>
+
+<style>
+  .wa-back-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+  }
+  .wa-back-btn:active {
+    background-color: var(--bg-tertiary);
+  }
+  .wa-back-btn .material-symbols-outlined {
+    font-size: 24px;
+    font-variation-settings: "FILL" 1, "wght" 500, "GRAD" 0, "opsz" 24;
+  }
+</style>
