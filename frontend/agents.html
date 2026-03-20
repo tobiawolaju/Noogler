@@ -16,7 +16,7 @@
     body {
       background: var(--bg-primary);
     }
-    
+
     .search-container {
       display: flex;
       flex-direction: row-reverse;
@@ -389,7 +389,7 @@
 <body>
   <main class="agents-shell">
     <div class="agents-top" style="justify-content: space-between;">
-      <h1 class="agents-title">Manage Agents</h1>
+      <h1 class="agents-title">Agents</h1>
       <div class="search-container">
         <button class="search-icon-btn" id="search-btn" aria-label="Search agents">
           <span class="material-symbols-outlined" aria-hidden="true">search</span>
@@ -544,8 +544,8 @@
 
     function renderAgentsGrid() {
       grid.innerHTML = '';
-      
-      const filteredAgents = allAgents.filter(([id, item]) => 
+
+      const filteredAgents = allAgents.filter(([id, item]) =>
         (item.agent_tag || 'Agent 1').toLowerCase().includes(searchQuery) ||
         (item.agent_soul || '').toLowerCase().includes(searchQuery)
       );

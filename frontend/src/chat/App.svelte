@@ -25,9 +25,9 @@
   let soulSaveTimer = null;
 
   let instruction = "";
-  let tag = "Agent 1";
-  $: activeAgentTag = tag.trim() || "Agent 1";
-  $: agentAvatarUrl = `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(activeAgentTag)}`;
+  let tag = "";
+  $: activeAgentTag = tag.trim() || "";
+  $: agentAvatarUrl = tag ? `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(activeAgentTag)}` : "";
   let agentSoul = "";
   let apiKey = "";
   let hasApiKey = false;
