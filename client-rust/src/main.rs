@@ -18,6 +18,7 @@ use std::env;
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
 pub struct Config {
+    #[serde(default)]
     pub device_id: String,
     pub user_uid: String,
     pub user_email: String,
@@ -121,10 +122,8 @@ fn main() -> Result<(), String> {
         }
         Commands::Repl => repl_loop(&mut local_body, &mut logger, cli.json)?,
         Commands::Connect => {
-            // Read config.json from current directory
-            let config_path = env::current_dir()
-                .unwrap_or_else(|_| PathBuf::from("."))
-                .join("config.json");
+            // Resolve config from executable directory first, then current working directory.
+            let config_path = resolve_config_path();
 
             if !config_path.exists() {
                 return Err(format!(
@@ -158,6 +157,21 @@ fn main() -> Result<(), String> {
     }
 
     Ok(())
+}
+
+fn resolve_config_path() -> PathBuf {
+    if let Ok(exe) = env::current_exe() {
+        if let Some(exe_dir) = exe.parent() {
+            let exe_config = exe_dir.join("config.json");
+            if exe_config.exists() {
+                return exe_config;
+            }
+        }
+    }
+
+    env::current_dir()
+        .unwrap_or_else(|_| PathBuf::from("."))
+        .join("config.json")
 }
 
 fn load_commands(path: &PathBuf) -> Result<Vec<CommandItem>, String> {

@@ -114,6 +114,13 @@ cargo build --release
 ```
 Copy the resulting `intern-local.exe` from `target/release/` to `frontend/public/` to make it available for download.
 
+#### Reduce Defender false positives (zero-cost)
+- Build with a consistent release process: run `client-rust/scripts/release-windows.ps1` in PowerShell.
+- The client now stores tray icon data in `%LOCALAPPDATA%\InternLocal` instead of `%TEMP%`.
+- If Defender flags a build, submit the exact `.exe` to Microsoft:
+  `https://www.microsoft.com/wdsi/filesubmission`
+- For local development only, add a Defender exclusion on your local build directory.
+
 ---
 
 # Tech Stack

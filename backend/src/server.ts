@@ -2,7 +2,7 @@ import "dotenv/config";
 import { createServer } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import { handleMessage, startLiveSession, sendAudioChunk, endLiveSession } from "./agent.js";
-import { getHistory, getUserSettings, updateUserSettings, setActiveAgentId, getActiveAgentId, deleteActiveAgent } from "./db.js";
+import { getHistory, getUserSettings, updateUserSettings, setActiveAgentId, getActiveAgentId, deleteActiveAgent, getChatEvents, appendChatEvent } from "./db.js";
 
 const PORT = Number(process.env.PORT || process.env.BACKEND_PORT || 8080);
 const LOG_LEVEL = (process.env.LOG_LEVEL || "info").toLowerCase();
@@ -139,19 +139,26 @@ wss.on("connection", (ws) => {
           })
           .catch((err) => log("error", "Failed to load user settings", err));
         
-        getHistory(clientUid).then(history => {
-          if (history && history.length > 0) {
-            const historyEvents = history.map(turn => {
-              const text = turn.parts?.[0]?.text || "";
-              if (turn.role === "user") {
-                return { type: "outgoing", text, tag: "ws" };
-              } else {
-                return { type: "chat_reply", text };
-              }
-            });
-            ws.send(JSON.stringify({ type: "history_sync", events: historyEvents }));
+        getChatEvents(clientUid).then(events => {
+          if (events && events.length > 0) {
+            ws.send(JSON.stringify({ type: "history_sync", events }));
+            return;
           }
-        }).catch(err => log("error", "Failed to sync history", err));
+          // Backward-compatible fallback for users who only have legacy AI history
+          getHistory(clientUid).then(history => {
+            if (history && history.length > 0) {
+              const historyEvents = history.map(turn => {
+                const text = turn.parts?.[0]?.text || "";
+                if (turn.role === "user") {
+                  return { type: "outgoing", text, tag: "ws", ts_ms: Date.now() };
+                } else {
+                  return { type: "chat_reply", text, ts_ms: Date.now() };
+                }
+              });
+              ws.send(JSON.stringify({ type: "history_sync", events: historyEvents }));
+            }
+          }).catch(err => log("error", "Failed to sync legacy history", err));
+        }).catch(err => log("error", "Failed to sync chat events", err));
         
         if (agentsByUid.has(clientUid)) {
            ws.send(JSON.stringify(makeEvent("agent_connected", "ok", "Local agent is already connected")));
@@ -168,20 +175,36 @@ wss.on("connection", (ws) => {
       return;
     }
 
-    if (isAgent) {
-      log("debug", `Agent -> Backend for UID=${clientUid}`, msg);
-      // Only broadcast screenshots or strict errors to the frontend UI
-      if (isScreenshotEvent(msg)) {
-        broadcastToFrontends(clientUid, msg);
-        const event = makeEvent("chat_reply", "ok", "Screenshot attached.");
-        broadcastToFrontends(clientUid, { ...event, type: "chat_reply", text: "Screenshot attached." });
-      } else if (msg.status === "error") {
-        const errText = msg.error || msg.detail || "Local agent encountered an error.";
-        const event = makeEvent("chat_reply", "error", errText);
-        broadcastToFrontends(clientUid, { ...event, type: "chat_reply", text: `Error: ${errText}` });
+      if (isAgent) {
+        log("debug", `Agent -> Backend for UID=${clientUid}`, msg);
+        // Only broadcast screenshots or strict errors to the frontend UI
+        if (isScreenshotEvent(msg)) {
+          broadcastToFrontends(clientUid, msg);
+          appendChatEvent(clientUid, {
+            ts_ms: msg.ts_ms || Date.now(),
+            duration_ms: msg.duration_ms || 0,
+            index: msg.index || 0,
+            tag: msg.tag || "ws",
+            instruction: msg.instruction || "screenshot",
+            status: msg.status || "ok",
+            detail: msg.detail || "Screenshot captured.",
+            screenshot_path: msg.screenshot_path || null,
+            screenshot_data_url: msg.screenshot_data_url || null
+          }).catch((err) => log("error", "Failed to save screenshot chat event", err));
+
+          const event = makeEvent("chat_reply", "ok", "Screenshot attached.");
+          const replyEvent = { ...event, type: "chat_reply", text: "Screenshot attached." };
+          broadcastToFrontends(clientUid, replyEvent);
+          appendChatEvent(clientUid, replyEvent).catch((err) => log("error", "Failed to save screenshot reply event", err));
+        } else if (msg.status === "error") {
+          const errText = msg.error || msg.detail || "Local agent encountered an error.";
+          const event = makeEvent("chat_reply", "error", errText);
+          const replyEvent = { ...event, type: "chat_reply", text: `Error: ${errText}` };
+          broadcastToFrontends(clientUid, replyEvent);
+          appendChatEvent(clientUid, replyEvent).catch((err) => log("error", "Failed to save error chat event", err));
+        }
+        return;
       }
-      return;
-    }
 
     if (isFrontend) {
       if (!clientUid) {
@@ -268,11 +291,22 @@ wss.on("connection", (ws) => {
       const input = msg.text || msg.instruction;
       if (input) {
         log("info", `Frontend -> AI for UID=${clientUid}`, { input });
+        const outgoingEvent = {
+          type: "outgoing",
+          text: String(input),
+          tag: (typeof msg.tag === "string" && msg.tag.trim()) ? msg.tag.trim() : "ws",
+          reply_to: typeof msg.reply_to === "string" ? msg.reply_to : undefined,
+          ts_ms: Date.now()
+        };
+        appendChatEvent(clientUid, outgoingEvent).catch((err) => log("error", "Failed to save outgoing chat event", err));
+
         handleMessage(clientUid, input).then(response => {
            if (response.type === "conversation") {
               if (response.text.trim() !== "") {
                 const event = makeEvent("chat_reply", "ok", response.text);
-                ws.send(JSON.stringify({ ...event, type: "chat_reply", text: response.text }));
+                const replyEvent = { ...event, type: "chat_reply", text: response.text };
+                ws.send(JSON.stringify(replyEvent));
+                appendChatEvent(clientUid, replyEvent).catch((err) => log("error", "Failed to save conversation reply event", err));
               }
            } else if (response.type === "commands") {
               if (!agentWs || agentWs.readyState !== WebSocket.OPEN) {
@@ -282,11 +316,15 @@ wss.on("connection", (ws) => {
               sendToAgent(agentWs, response.commands);
               // Send the natural language reply accompanying the internal commands
               const event = makeEvent("chat_reply", "ok", response.text);
-              ws.send(JSON.stringify({ ...event, type: "chat_reply", text: response.text }));
+              const replyEvent = { ...event, type: "chat_reply", text: response.text };
+              ws.send(JSON.stringify(replyEvent));
+              appendChatEvent(clientUid, replyEvent).catch((err) => log("error", "Failed to save command reply event", err));
            }
         }).catch(err => {
            log("error", "Agent error", err);
-           ws.send(JSON.stringify(makeEvent("agent_error", "error", "AI failed to process instruction")));
+           const errorEvent = makeEvent("agent_error", "error", "AI failed to process instruction");
+           ws.send(JSON.stringify(errorEvent));
+           appendChatEvent(clientUid, errorEvent).catch((saveErr) => log("error", "Failed to save agent error event", saveErr));
         });
 
         return;

@@ -46,6 +46,11 @@ const btnDownload = document.getElementById("btn-download");
 
 let currentUser = null;
 
+function normalizeLandingViewport() {
+  // Returning from agents/chat can restore old scroll position on mobile.
+  window.scrollTo(0, 0);
+}
+
 function showLoggedOut() {
   if (heroLoading) heroLoading.classList.add("hidden");
   if (heroContent) heroContent.classList.remove("hidden");
@@ -69,7 +74,12 @@ function showLoggedIn(user) {
 }
 
 onAuthStateChanged(auth, (user) => {
+  normalizeLandingViewport();
   user ? showLoggedIn(user) : showLoggedOut();
+});
+
+window.addEventListener("pageshow", () => {
+  normalizeLandingViewport();
 });
 
 btnGoogle.onclick = async () => {

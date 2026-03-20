@@ -114,6 +114,43 @@ export async function appendHistory(uid: string, role: "user" | "model", text: s
   }
 }
 
+export async function getChatEvents(uid: string): Promise<any[]> {
+  try {
+    const agentId = await getActiveAgentId(uid);
+    const snapshot = await agentRef(uid, agentId).child("chat_events").once("value");
+    const val = snapshot.val();
+    if (Array.isArray(val)) return val;
+    if (typeof val === "object" && val !== null) return Object.values(val);
+  } catch (err) {
+    console.error(`[DB] Failed to get chat events for UID=${uid}`, err);
+  }
+  return [];
+}
+
+export async function appendChatEvent(uid: string, event: Record<string, any>) {
+  try {
+    const agentId = await getActiveAgentId(uid);
+    const eventsRef = agentRef(uid, agentId).child("chat_events");
+
+    const snapshot = await eventsRef.once("value");
+    let current: any[] = snapshot.val() || [];
+    if (!Array.isArray(current) && typeof current === "object") {
+      current = Object.values(current);
+    }
+
+    current.push(event);
+
+    // Keep last 200 UI events
+    if (current.length > 200) {
+      current = current.slice(current.length - 200);
+    }
+
+    await eventsRef.set(current);
+  } catch (err) {
+    console.error(`[DB] Failed to append chat event for UID=${uid}`, err);
+  }
+}
+
 export async function getUserGeminiApiKey(uid: string): Promise<string> {
   try {
     const agentId = await getActiveAgentId(uid);

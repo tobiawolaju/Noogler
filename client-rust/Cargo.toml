@@ -2,6 +2,7 @@
 name = "intern-local"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 authors = ["The Intern"]
 description = "Windows Local PC Body (CLI stub for command flow)"
@@ -21,3 +22,6 @@ screenshots = "0.8"
 tray-item = "0.10"
 windows = { version = "0.54", features = ["Win32_Foundation", "Win32_System_Console", "Win32_UI_WindowsAndMessaging"] }
 windows-sys = "0.52"
+
+[build-dependencies]
+winres = "0.1"

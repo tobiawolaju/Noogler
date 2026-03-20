@@ -1,7 +1,6 @@
 build exe
 cargo build --release --manifest-path client-rust/Cargo.toml --target x86_64-pc-windows-gnu
 
-
 .\intern-local.exe --log-file ..\..\..\..\test\run.jsonl run --file ..\..\..\..\test\commands_win.json
 
 
@@ -18,3 +17,6 @@ worked like charm
 ]
     cd backend
   npm install
+
+release windows script (run from client-rust)
+powershell -ExecutionPolicy Bypass -File .\scripts\release-windows.ps1
