@@ -543,6 +543,26 @@
       await renderAgents();
     };
 
+    function waitForInitialAuthState(timeoutMs = 5000) {
+      if (auth.currentUser) return Promise.resolve(auth.currentUser);
+      return new Promise((resolve) => {
+        let settled = false;
+        const settle = (user) => {
+          if (settled) return;
+          settled = true;
+          resolve(user || null);
+        };
+        const unsub = onAuthStateChanged(auth, (user) => {
+          unsub();
+          settle(user);
+        });
+        setTimeout(() => {
+          unsub();
+          settle(auth.currentUser || null);
+        }, timeoutMs);
+      });
+    }
+
     async function initAuth() {
       try {
         await setPersistence(auth, browserLocalPersistence);
@@ -550,11 +570,7 @@
         await setPersistence(auth, browserSessionPersistence);
       }
 
-      if (typeof auth.authStateReady === "function") {
-        await auth.authStateReady();
-      }
-
-      const user = auth.currentUser;
+      const user = await waitForInitialAuthState();
       if (!user) {
         window.location.href = '/';
         return;

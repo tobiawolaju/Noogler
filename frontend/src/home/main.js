@@ -73,6 +73,26 @@ if (landingFlow) {
   });
 }
 
+function waitForInitialAuthState(timeoutMs = 5000) {
+  if (auth.currentUser) return Promise.resolve(auth.currentUser);
+  return new Promise((resolve) => {
+    let settled = false;
+    const settle = (user) => {
+      if (settled) return;
+      settled = true;
+      resolve(user || null);
+    };
+    const unsub = onAuthStateChanged(auth, (user) => {
+      unsub();
+      settle(user);
+    });
+    setTimeout(() => {
+      unsub();
+      settle(auth.currentUser || null);
+    }, timeoutMs);
+  });
+}
+
 async function initAuth() {
   try {
     await setPersistence(auth, browserLocalPersistence);
@@ -80,11 +100,16 @@ async function initAuth() {
     await setPersistence(auth, browserSessionPersistence);
   }
 
-  if (typeof auth.authStateReady === "function") {
-    await auth.authStateReady();
+  try {
+    await getRedirectResult(auth);
+  } catch (e) {
+    console.error(e);
+    setLoading(false);
+    setStatus("Sign-in failed. Please try again.");
   }
 
-  if (auth.currentUser) {
+  const initialUser = await waitForInitialAuthState();
+  if (initialUser) {
     redirectToAgents();
   } else {
     showSignedOut();
@@ -92,12 +117,6 @@ async function initAuth() {
 
   onAuthStateChanged(auth, (user) => {
     if (user) redirectToAgents();
-  });
-
-  getRedirectResult(auth).catch((e) => {
-    console.error(e);
-    setLoading(false);
-    setStatus("Sign-in failed. Please try again.");
   });
 }
 
