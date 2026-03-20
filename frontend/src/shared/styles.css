@@ -599,7 +599,7 @@ input {
 
 .wa-panel {
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.72);
+  background-color: var(--bg-secondary);
   border-top-left-radius: var(--radius-xl);
   border-top-right-radius: var(--radius-xl);
   padding: var(--space-lg);
