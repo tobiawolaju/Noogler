@@ -61,18 +61,7 @@
       backdrop-filter: blur(4px);
     }
 
-    .agents-back {
-      width: 40px;
-      height: 40px;
-      border-radius: 999px;
-      border: none;
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-    }
+
 
     .agents-title {
       margin: 0;
@@ -164,6 +153,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      transform: rotate(90deg);
     }
 
     .agent-card h3 {
@@ -328,9 +318,6 @@
 <body>
   <main class="agents-shell">
     <div class="agents-top">
-      <a class="agents-back" href="/" aria-label="Back">
-        <span class="material-symbols-outlined" aria-hidden="true">&#xE5C4;</span>
-      </a>
       <h1 class="agents-title">Manage Agents</h1>
     </div>
     <div id="agents-empty" class="agent-empty">No agents yet. Create one with +</div>
