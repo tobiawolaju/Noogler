@@ -147,11 +147,6 @@ if (btnGoogle) {
     setStatus("");
     setLoading(true);
     try {
-      if (isMobile) {
-        setStatus("Opening Google sign-in...");
-        await signInWithRedirect(auth, provider);
-        return;
-      }
       await signInWithPopup(auth, provider);
     } catch (e) {
       console.error(e);
