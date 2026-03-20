@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="/src/shared/styles.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
-    body {
+    html, body {
       background: var(--bg-primary);
       overflow-y: auto !important;
       height: auto !important;
@@ -21,6 +21,7 @@
     
     .search-container {
       display: flex;
+      flex-direction: row-reverse;
       align-items: center;
       background: var(--bg-secondary);
       border-radius: 999px;
@@ -54,7 +55,7 @@
       height: 100%;
       border: none !important;
       background: transparent !important;
-      padding: 0 14px 0 0 !important;
+      padding: 0 0 0 14px !important;
       font-size: 0.95rem;
       outline: none;
       width: 0;
@@ -505,7 +506,8 @@
     const searchInput = document.getElementById('search-input');
     const searchContainer = searchBtn.parentElement;
 
-    searchBtn.onclick = () => {
+    searchBtn.onclick = (e) => {
+      e.stopPropagation();
       searchContainer.classList.toggle('expanded');
       if (searchContainer.classList.contains('expanded')) {
         searchInput.focus();
@@ -517,6 +519,14 @@
         }
       }
     };
+
+    searchInput.onclick = (e) => e.stopPropagation();
+
+    document.addEventListener('click', (e) => {
+      if (searchContainer.classList.contains('expanded') && !searchInput.value) {
+        searchContainer.classList.remove('expanded');
+      }
+    });
 
     searchInput.oninput = (e) => {
       searchQuery = e.target.value.toLowerCase();
