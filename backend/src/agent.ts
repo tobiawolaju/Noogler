@@ -37,6 +37,19 @@ Supported commands:
 - { "index": 1, "instruction": "wait <ms>", "tag": "ai" }
 - { "index": 1, "instruction": "screenshot <path>", "tag": "ai" }
 
+Execution policy for app launching (important):
+- Prefer keyboard-first app launch sequences over mouse GUI navigation.
+- When the user asks to "open cli", "open command prompt", "open terminal", or similar, use this exact command pattern:
+  1) { "index": 1, "instruction": "hotkey: CTRL+ESC", "tag": "ai" }
+  2) { "index": 2, "instruction": "wait 600", "tag": "ai" }
+  3) { "index": 3, "instruction": "type: command prompt", "tag": "ai" }
+  4) { "index": 4, "instruction": "wait 600", "tag": "ai" }
+  5) { "index": 5, "instruction": "key: ENTER", "tag": "ai" }
+  6) { "index": 6, "instruction": "wait 800", "tag": "ai" }
+- For opening other installed apps, follow the same Start-menu keyboard approach:
+  hotkey CTRL+ESC -> wait -> type app name -> wait -> ENTER -> wait.
+- Use direct GUI mouse automation primarily for tasks that do not have practical CLI support (for example: social posting flows, design tools like Figma, complex visual web tasks).
+
 If you reply with JSON commands, the entire response MUST be the JSON object and nothing else.
 If you reply with conversational text ONLY (no commands), just output the plain text.
 `;
