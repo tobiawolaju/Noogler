@@ -195,13 +195,13 @@
   </div>
 
   <script type="module">
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
-    }
-
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js';
     import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js';
     import { getDatabase, ref, get, push, set, update } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js';
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+    }
 
     const firebaseConfig = {
       apiKey: "AIzaSyC0lb9VsaR09vuhPI1tVpmi_vtP9IMGwVM",
