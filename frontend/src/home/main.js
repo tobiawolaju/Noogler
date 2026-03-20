@@ -7,8 +7,7 @@ import {
   getRedirectResult,
   signInWithRedirect,
   signInWithPopup,
-  onAuthStateChanged,
-  signOut
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
 if ("serviceWorker" in navigator) {
@@ -43,14 +42,6 @@ const btnGoogleLabel = document.getElementById("btn-google-label");
 const btnGoogleSpinner = document.getElementById("btn-google-spinner");
 const signinStatus = document.getElementById("signin-status");
 const landingFlow = document.getElementById("landing-flow");
-
-const ctaTitle = document.getElementById("cta-title");
-const ctaCopy = document.getElementById("cta-copy");
-const userProfileSection = document.getElementById("user-profile-section");
-const userProfileImg = document.getElementById("user-profile-img");
-const btnLogout = document.getElementById("btn-logout");
-const btnClearCache = document.getElementById("btn-clear-cache");
-
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || "");
 
 function setStatus(message) {
@@ -68,20 +59,6 @@ function setLoading(isLoading) {
 
 function showSignedOut() {
   if (btnGoogle) btnGoogle.classList.remove("hidden");
-  if (userProfileSection) userProfileSection.classList.add("hidden");
-  if (btnClearCache) btnClearCache.classList.add("hidden");
-  if (ctaTitle) ctaTitle.textContent = "Start With Google";
-  if (ctaCopy) ctaCopy.textContent = "Sign in to create and manage your agents.";
-  setLoading(false);
-}
-
-function showLoggedInState(user) {
-  if (btnGoogle) btnGoogle.classList.add("hidden");
-  if (userProfileSection) userProfileSection.classList.remove("hidden");
-  if (btnClearCache) btnClearCache.classList.remove("hidden");
-  if (userProfileImg) userProfileImg.src = user.photoURL || `https://api.dicebear.com/9.x/lorelei/svg?seed=${user.email || 'user'}`;
-  if (ctaTitle) ctaTitle.textContent = "Ready to go";
-  if (ctaCopy) ctaCopy.textContent = "Attempting to redirect you...";
   setLoading(false);
 }
 
@@ -126,19 +103,13 @@ async function initAuth() {
 
   const initialUser = await waitForInitialAuthState();
   if (initialUser) {
-    showLoggedInState(initialUser);
     redirectToAgents();
   } else {
     showSignedOut();
   }
 
   onAuthStateChanged(auth, (user) => {
-    if (user) {
-      showLoggedInState(user);
-      redirectToAgents();
-    } else {
-      showSignedOut();
-    }
+    if (user) redirectToAgents();
   });
 }
 
@@ -152,52 +123,6 @@ if (btnGoogle) {
       console.error(e);
       setLoading(false);
       setStatus("Sign-in failed. Please try again.");
-    }
-  };
-}
-
-if (btnLogout) {
-  btnLogout.onclick = async () => {
-    setStatus("Signing out...");
-    setLoading(true);
-    try {
-      await signOut(auth);
-      setStatus("");
-    } catch (e) {
-      console.error(e);
-      setStatus("Failed to sign out.");
-      setLoading(false);
-    }
-  };
-}
-
-if (btnClearCache) {
-  btnClearCache.onclick = async () => {
-    const originalText = btnClearCache.textContent;
-    btnClearCache.textContent = "Clearing Cache...";
-    try {
-      // Unregister Service Workers
-      if ('serviceWorker' in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        for (const r of regs) await r.unregister();
-      }
-      // Clear Caches
-      if ('caches' in window) {
-        const keys = await caches.keys();
-        for (const k of keys) await caches.delete(k);
-      }
-      // Clear Storage
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      btnClearCache.textContent = "Done! Reloading...";
-      setTimeout(() => {
-        window.location.href = "/?clear=" + Date.now();
-      }, 800);
-    } catch (e) {
-      console.error(e);
-      btnClearCache.textContent = "Failed. Try Incognito.";
-      setTimeout(() => btnClearCache.textContent = originalText, 3000);
     }
   };
 }
