@@ -319,7 +319,7 @@ input {
 }
 
 .from-body .wa-bubble {
-  background-color: var(--mybubble2);
+  background-color: var(--otherbubble2);
   color: var(--black);
 }
 
@@ -347,11 +347,11 @@ input {
 }
 
 .wa-typing-dots span {
-  width: 8px;
-  height: 8px;
+  width: 4px;
+  height: 4px;
   border-radius: 999px;
-  background: var(--text-muted);
-  opacity: 0.35;
+  background: var(--black);
+  opacity: 0.5;
   animation: waTyping 1s infinite ease-in-out;
 }
 
