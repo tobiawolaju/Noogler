@@ -43,7 +43,7 @@ const btnGoogleLabel = document.getElementById("btn-google-label");
 const btnGoogleSpinner = document.getElementById("btn-google-spinner");
 const signinStatus = document.getElementById("signin-status");
 const landingFlow = document.getElementById("landing-flow");
-const isAndroid = /Android/i.test(navigator.userAgent || "");
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || "");
 
 function setStatus(message) {
   if (!signinStatus) return;
@@ -95,12 +95,6 @@ function waitForInitialAuthState(timeoutMs = 5000) {
 
 async function initAuth() {
   try {
-    await setPersistence(auth, browserLocalPersistence);
-  } catch {
-    await setPersistence(auth, browserSessionPersistence);
-  }
-
-  try {
     await getRedirectResult(auth);
   } catch (e) {
     console.error(e);
@@ -125,7 +119,7 @@ if (btnGoogle) {
     setStatus("");
     setLoading(true);
     try {
-      if (isAndroid) {
+      if (isMobile) {
         setStatus("Opening Google sign-in...");
         await signInWithRedirect(auth, provider);
         return;

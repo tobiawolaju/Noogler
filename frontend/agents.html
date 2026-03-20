@@ -564,12 +564,6 @@
     }
 
     async function initAuth() {
-      try {
-        await setPersistence(auth, browserLocalPersistence);
-      } catch {
-        await setPersistence(auth, browserSessionPersistence);
-      }
-
       const user = await waitForInitialAuthState();
       if (!user) {
         window.location.href = '/';
