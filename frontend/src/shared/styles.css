@@ -7,7 +7,7 @@
   --bg-primary: #efe9dd;
   --bg-secondary: #ffffff;
   --bg-tertiary: #e6e1d4;
-  
+
   --text-primary: #0b1324;
   --text-secondary: #3b4a63;
   --text-muted: #6b7a93;
@@ -16,7 +16,7 @@
   --accent: #25d366;
   --accent-hover: #1fb85a;
   --accent-soft: #dcf8c6;
-  
+
   --error: #dc2626;
   --success: #16a34a;
 
@@ -31,7 +31,7 @@
   /* Typography */
   --font-main: "Space Grotesk", system-ui, -apple-system, sans-serif;
   --font-mono: "Spline Sans Mono", monospace;
-  
+
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -62,7 +62,8 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -70,7 +71,8 @@ html, body {
   color: var(--text-primary);
   font-family: var(--font-main);
   line-height: 1.5;
-  overflow: hidden; /* Prevent body scroll, use inner scroll */
+  overflow: hidden;
+  /* Prevent body scroll, use inner scroll */
   overscroll-behavior: none;
 }
 
@@ -202,7 +204,8 @@ input {
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' stroke='%23d7cfbf' stroke-width='1.2' stroke-linecap='round' opacity='0.45'%3E%3Ccircle cx='28' cy='26' r='9'/%3E%3Cpath d='M66 26h18M75 17v18'/%3E%3Crect x='108' y='18' width='16' height='12' rx='3'/%3E%3Cpath d='M154 22c8 0 8 10 0 10-8 0-8-10 0-10z'/%3E%3Cpath d='M184 20l10 10M194 20l-10 10'/%3E%3Cpath d='M24 76h16M32 68v16'/%3E%3Ccircle cx='72' cy='74' r='7'/%3E%3Cpath d='M110 66l14 14M124 66l-14 14'/%3E%3Crect x='152' y='66' width='18' height='14' rx='3'/%3E%3Cpath d='M188 70c7 0 7 9 0 9-7 0-7-9 0-9z'/%3E%3Cpath d='M22 122c8 0 8 10 0 10-8 0-8-10 0-10z'/%3E%3Crect x='62' y='118' width='16' height='12' rx='3'/%3E%3Cpath d='M108 116h18M117 107v18'/%3E%3Ccircle cx='154' cy='124' r='8'/%3E%3Cpath d='M184 116l12 12M196 116l-12 12'/%3E%3Cpath d='M24 170h16M32 162v16'/%3E%3Ccircle cx='72' cy='172' r='7'/%3E%3Crect x='108' y='166' width='16' height='12' rx='3'/%3E%3Cpath d='M154 166c8 0 8 10 0 10-8 0-8-10 0-10z'/%3E%3Cpath d='M186 166l10 10M196 166l-10 10'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 220px 220px;
-  scrollbar-width: none; /* Hide scrollbar for clean mobile look */
+  scrollbar-width: none;
+  /* Hide scrollbar for clean mobile look */
 }
 
 .wa-feed::-webkit-scrollbar {
@@ -314,6 +317,7 @@ input {
   gap: 6px;
   align-items: center;
   min-height: 20px;
+  background: #fff1f1;
 }
 
 .wa-typing-dots span {
@@ -325,12 +329,27 @@ input {
   animation: waTyping 1s infinite ease-in-out;
 }
 
-.wa-typing-dots span:nth-child(2) { animation-delay: 0.15s; }
-.wa-typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+.wa-typing-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.wa-typing-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
 
 @keyframes waTyping {
-  0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
-  40% { transform: translateY(-2px); opacity: 0.9; }
+
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+
+  40% {
+    transform: translateY(-2px);
+    opacity: 0.9;
+  }
 }
 
 .wa-bubble-actions {
@@ -487,8 +506,15 @@ input {
 }
 
 @keyframes slideUp {
-  from { transform: translateY(10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .wa-reply-content {
@@ -529,8 +555,13 @@ input {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .call-overlay-header {
@@ -745,8 +776,13 @@ input {
   border-radius: var(--radius-full);
 }
 
-.wa-status-dot.online { background-color: var(--success); }
-.wa-status-dot.offline { background-color: var(--error); }
+.wa-status-dot.online {
+  background-color: var(--success);
+}
+
+.wa-status-dot.offline {
+  background-color: var(--error);
+}
 
 .btn {
   padding: 11px 14px;
@@ -794,6 +830,7 @@ input {
     opacity: 0;
     transform: translateY(4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -801,8 +838,13 @@ input {
 }
 
 @keyframes waFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes waSheetUp {
@@ -810,6 +852,7 @@ input {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -866,7 +909,18 @@ input {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 0.3; }
-  50% { transform: scale(1.5); opacity: 0; }
-  100% { transform: scale(1); opacity: 0.3; }
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+
+  50% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
 }
