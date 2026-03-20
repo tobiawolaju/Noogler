@@ -4,6 +4,7 @@
   export let connected = false;
   export let wsUrl = "";
   export let tag = "";
+  export let avatarUrl = "";
   export let agentSoul = "";
   export let apiKey = "";
   export let hasApiKey = false;
@@ -32,6 +33,9 @@
       </button>
 
       <div class="panel-header">
+        {#if avatarUrl}
+          <img class="wa-agent-avatar wa-agent-avatar-lg" src={avatarUrl} alt={`${tag || "Agent 1"} avatar`} />
+        {/if}
         <h1>Agent Control Center</h1>
         <p style="opacity: 0.7; font-size: 0.9rem;">Manage connection, identity, and behavior for this agent.</p>
       </div>

@@ -26,6 +26,8 @@
 
   let instruction = "";
   let tag = "Agent 1";
+  $: activeAgentTag = tag.trim() || "Agent 1";
+  $: agentAvatarUrl = `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(activeAgentTag)}`;
   let agentSoul = "";
   let apiKey = "";
   let hasApiKey = false;
@@ -354,7 +356,8 @@
   <main class="wa-main">
     <HeaderBar
       {statusLine}
-      agentName={tag.trim() || "Agent 1"}
+      agentName={activeAgentTag}
+      avatarUrl={agentAvatarUrl}
       {callActive}
       {micVolume}
       onOpenPanel={openPanel}
@@ -382,7 +385,8 @@
 
   <OngoingCallOverlay
     {ws}
-    agentName={tag.trim() || "Agent 1"}
+    active={callActive}
+    agentName={activeAgentTag}
     bind:micVolume
     visible={overlayVisible}
     elapsedLabel={callDurationLabel}
@@ -395,6 +399,7 @@
     {connected}
     bind:wsUrl
     bind:tag
+    avatarUrl={agentAvatarUrl}
     bind:agentSoul
     bind:apiKey
     {hasApiKey}

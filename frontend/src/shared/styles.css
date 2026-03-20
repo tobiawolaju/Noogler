@@ -152,6 +152,21 @@ input {
   gap: var(--space-xxs);
 }
 
+.wa-agent-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  object-fit: cover;
+  background: #f2f5f8;
+}
+
+.wa-agent-avatar-lg {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+}
+
 .wa-title-btn h2 {
   margin: 0;
   font-size: 1.05rem;

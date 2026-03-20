@@ -1,6 +1,7 @@
 <script>
   export let statusLine = "";
   export let agentName = "Agent 1";
+  export let avatarUrl = "";
   export let callActive = false;
   export let onOpenPanel = () => {};
   export let onToggleCall = () => {};
@@ -19,6 +20,9 @@
       >
         <div class="wa-title-wrap">
           <div class="wa-name-row">
+             {#if avatarUrl}
+               <img class="wa-agent-avatar" src={avatarUrl} alt={`${agentName} avatar`} />
+             {/if}
              <h2>{agentName}</h2>
           </div>
           <p class="wa-status-line">{statusLine}</p>

@@ -1,6 +1,7 @@
 <script>
   import { onDestroy } from "svelte";
   export let visible = false;
+  export let active = false;
   export let ws = null;
   export let agentName = "Agent 1";
   export let elapsedLabel = "0:00";
@@ -15,21 +16,31 @@
   export let micVolume = 0;
   let nextPlayTime = 0;
   let wsListenerAdded = false;
+  let callStarted = false;
 
-  $: if (visible && ws && ws.readyState === 1) {
-    if (!wsListenerAdded) {
+  $: if (active) {
+    if (ws && !wsListenerAdded) {
       ws.addEventListener("message", handleWsMessage);
       wsListenerAdded = true;
     }
     startVoiceCall();
-  } else if (!visible) {
+    notifyCallStarted();
+  } else {
     stopVoiceCall();
+  }
+
+  function notifyCallStarted() {
+    if (callStarted) return;
+    if (ws && ws.readyState === 1) {
+      ws.send(JSON.stringify({ type: "start_call" }));
+      callStarted = true;
+    }
   }
 
   const handleWsMessage = (event) => {
     try {
       const data = JSON.parse(event.data);
-      if (data.type === "audio_reply" && visible && audioContext) {
+      if (data.type === "audio_reply" && audioContext) {
         playAudio(data.data);
       }
     } catch(e) {}
@@ -80,8 +91,6 @@
   async function startVoiceCall() {
     if (audioContext) return;
 
-    ws.send(JSON.stringify({ type: "start_call" }));
-
     try {
       mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
@@ -93,7 +102,7 @@
       workletNode = new AudioWorkletNode(audioContext, "pcm-processor");
       
       workletNode.port.onmessage = (event) => {
-        if (!visible || !ws || ws.readyState !== 1) return;
+        if (!active || !ws || ws.readyState !== 1) return;
         const base64 = arrayBufferToBase64(event.data);
         ws.send(JSON.stringify({ type: "audio_chunk", data: base64 }));
       };
@@ -110,8 +119,11 @@
   }
 
   function stopVoiceCall() {
-    if (ws && ws.readyState === 1 && wsListenerAdded) {
+    if (ws && ws.readyState === 1 && callStarted) {
       ws.send(JSON.stringify({ type: "end_call" }));
+      callStarted = false;
+    }
+    if (ws && wsListenerAdded) {
       ws.removeEventListener("message", handleWsMessage);
       wsListenerAdded = false;
     }
