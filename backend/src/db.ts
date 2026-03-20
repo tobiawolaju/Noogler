@@ -58,6 +58,25 @@ export type AgentRecord = UserSettings & {
   updated_at: number;
 };
 
+export type AgentMemory = {
+  goals: string[];
+  currentTask: string | null;
+  taskQueue: string[];
+  completedTasks: string[];
+  context: Record<string, any>;
+  updated_at?: number;
+};
+
+function defaultAgentMemory(): AgentMemory {
+  return {
+    goals: [],
+    currentTask: null,
+    taskQueue: [],
+    completedTasks: [],
+    context: {}
+  };
+}
+
 async function getLegacyRootSettings(uid: string): Promise<UserSettings> {
   try {
     const snapshot = await userRef(uid).once("value");
@@ -312,5 +331,41 @@ export async function deleteActiveAgent(uid: string): Promise<{ deleted_agent_id
   } catch (err) {
     console.error(`[DB] Failed to delete active agent for UID=${uid}`, err);
     throw err;
+  }
+}
+
+export async function getAgentMemory(uid: string): Promise<AgentMemory> {
+  try {
+    const agentId = await getActiveAgentId(uid);
+    const snapshot = await agentRef(uid, agentId).child("agent_memory").once("value");
+    const raw = snapshot.val() || {};
+    return {
+      goals: Array.isArray(raw.goals) ? raw.goals.map((x: any) => String(x)) : [],
+      currentTask: typeof raw.currentTask === "string" && raw.currentTask.trim() ? raw.currentTask.trim() : null,
+      taskQueue: Array.isArray(raw.taskQueue) ? raw.taskQueue.map((x: any) => String(x)) : [],
+      completedTasks: Array.isArray(raw.completedTasks) ? raw.completedTasks.map((x: any) => String(x)) : [],
+      context: typeof raw.context === "object" && raw.context !== null ? raw.context : {},
+      updated_at: typeof raw.updated_at === "number" ? raw.updated_at : undefined
+    };
+  } catch (err) {
+    console.error(`[DB] Failed to get agent memory for UID=${uid}`, err);
+    return defaultAgentMemory();
+  }
+}
+
+export async function saveAgentMemory(uid: string, memory: AgentMemory): Promise<void> {
+  try {
+    const agentId = await getActiveAgentId(uid);
+    const normalized: AgentMemory = {
+      goals: Array.isArray(memory.goals) ? memory.goals.map((x) => String(x)) : [],
+      currentTask: typeof memory.currentTask === "string" && memory.currentTask.trim() ? memory.currentTask.trim() : null,
+      taskQueue: Array.isArray(memory.taskQueue) ? memory.taskQueue.map((x) => String(x)) : [],
+      completedTasks: Array.isArray(memory.completedTasks) ? memory.completedTasks.map((x) => String(x)) : [],
+      context: typeof memory.context === "object" && memory.context !== null ? memory.context : {},
+      updated_at: Date.now()
+    };
+    await agentRef(uid, agentId).child("agent_memory").set(normalized);
+  } catch (err) {
+    console.error(`[DB] Failed to save agent memory for UID=${uid}`, err);
   }
 }

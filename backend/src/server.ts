@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { createServer } from "http";
 import { WebSocket, WebSocketServer } from "ws";
-import { handleMessage, startLiveSession, sendAudioChunk, endLiveSession } from "./agent.js";
+import { handleMessage, startLiveSession, sendAudioChunk, endLiveSession, onAgentCommandResult } from "./agent.js";
 import { getHistory, getUserSettings, updateUserSettings, setActiveAgentId, getActiveAgentId, deleteActiveAgent, getChatEvents, appendChatEvent } from "./db.js";
 
 const PORT = Number(process.env.PORT || process.env.BACKEND_PORT || 8080);
@@ -203,6 +203,26 @@ wss.on("connection", (ws) => {
           broadcastToFrontends(clientUid, replyEvent);
           appendChatEvent(clientUid, replyEvent).catch((err) => log("error", "Failed to save error chat event", err));
         }
+
+        if (isCommandResultEvent(msg)) {
+          onAgentCommandResult(clientUid, msg).then((next) => {
+            if (!next) return;
+            if (next.type === "conversation") {
+              const event = makeEvent("chat_reply", "ok", next.text);
+              const replyEvent = { ...event, type: "chat_reply", text: next.text };
+              broadcastToFrontends(clientUid!, replyEvent);
+              appendChatEvent(clientUid!, replyEvent).catch((err) => log("error", "Failed to save orchestration reply event", err));
+              return;
+            }
+            const nextAgentWs = agentsByUid.get(clientUid!);
+            if (!nextAgentWs || nextAgentWs.readyState !== WebSocket.OPEN) return;
+            sendToAgent(nextAgentWs, next.commands);
+            const event = makeEvent("chat_reply", "ok", next.text);
+            const replyEvent = { ...event, type: "chat_reply", text: next.text };
+            broadcastToFrontends(clientUid!, replyEvent);
+            appendChatEvent(clientUid!, replyEvent).catch((err) => log("error", "Failed to save orchestration command event", err));
+          }).catch((err) => log("error", "Failed to advance task orchestration", err));
+        }
         return;
       }
 
@@ -366,6 +386,16 @@ function isScreenshotEvent(payload: any): boolean {
     payload.instruction.startsWith("screenshot ") &&
     payload.status === "ok" &&
     payload.screenshot_data_url
+  );
+}
+
+function isCommandResultEvent(payload: any): boolean {
+  return Boolean(
+    payload &&
+    typeof payload === "object" &&
+    typeof payload.instruction === "string" &&
+    typeof payload.status === "string" &&
+    (typeof payload.index === "number" || typeof payload.index === "string")
   );
 }
 
