@@ -1,8 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import {
+  browserLocalPersistence,
+  browserSessionPersistence,
   getAuth,
   GoogleAuthProvider,
   getRedirectResult,
+  setPersistence,
   signInWithRedirect,
   signInWithPopup,
   onAuthStateChanged
@@ -34,6 +37,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+
+try {
+  await setPersistence(auth, browserLocalPersistence);
+} catch {
+  await setPersistence(auth, browserSessionPersistence);
+}
 
 const btnGoogle = document.getElementById("btn-google");
 const btnGoogleLabel = document.getElementById("btn-google-label");

@@ -376,7 +376,7 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js';
+    import { browserLocalPersistence, browserSessionPersistence, getAuth, onAuthStateChanged, setPersistence, signOut } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js';
     import { getDatabase, ref, get, push, set, update } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js';
 
     if ("serviceWorker" in navigator) {
@@ -404,6 +404,12 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
+
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+    } catch {
+      await setPersistence(auth, browserSessionPersistence);
+    }
 
     const grid = document.getElementById('agents-grid');
     const empty = document.getElementById('agents-empty');
