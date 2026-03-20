@@ -105,15 +105,6 @@
 
       <div class="wa-nav-links">
         <a class="btn secondary" href="/agents.html">Manage Agents</a>
-        <a class="btn secondary" href="/">Home</a>
-      </div>
-
-      <div class="wa-panel-actions">
-        {#if !connected}
-          <button class="btn primary" on:click={onConnect}>Connect</button>
-        {:else}
-          <button class="btn secondary" on:click={onDisconnect}>Disconnect</button>
-        {/if}
         <button class="btn secondary" on:click={onPing} disabled={!connected}>Test Ping</button>
       </div>
 
