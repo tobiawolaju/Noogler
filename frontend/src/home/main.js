@@ -8,7 +8,15 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+  window.addEventListener("load", async () => {
+    const isLocalDev = import.meta.env.DEV || ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    if (isLocalDev) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+      return;
+    }
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
 }
 
 const firebaseConfig = {

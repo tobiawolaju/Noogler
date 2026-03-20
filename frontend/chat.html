@@ -52,7 +52,15 @@
   <div id="app"></div>
   <script>
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+      window.addEventListener("load", async () => {
+        const isLocalDev = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+        if (isLocalDev) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map((r) => r.unregister()));
+          return;
+        }
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      });
     }
   </script>
   <script type="module" src="/src/chat/main.js"></script>
