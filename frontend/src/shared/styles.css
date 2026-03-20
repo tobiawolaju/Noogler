@@ -20,6 +20,16 @@
   --error: #dc2626;
   --success: #16a34a;
 
+  /*backgrounds*/
+  --mybubble1: #31fb85;
+  --mybubble2: #0d8d3e;
+  --otherbubble1: #ffffff;
+  --otherbubble2: #e7e7e7;
+
+  --black: #000;
+  --white: #fff;
+  /*end */
+
   /* Spacing - Compact Mobile Focus */
   --space-xxs: 4px;
   --space-xs: 8px;
@@ -273,7 +283,7 @@ input {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
-  background: var(--bg-secondary);
+  background: var(--otherbubble1);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-full);
   padding: 4px 10px;
@@ -287,6 +297,8 @@ input {
 
 .from-me .wa-name-bubble {
   align-self: flex-end;
+  background-color: var(--mybubble1);
+  color: var(--black);
 }
 
 .wa-bubble-container {
@@ -307,12 +319,12 @@ input {
 }
 
 .from-body .wa-bubble {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--mybubble2);
+  color: var(--black);
 }
 
 .wa-bubble.from-body.ok {
-  background-color: #ffffff;
+  background-color: var(--otherbubble2);
 }
 
 .from-me .wa-bubble {
