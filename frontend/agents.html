@@ -14,10 +14,6 @@
     body { background: var(--bg-primary); }
     .agents-shell { max-width: 1080px; margin: 0 auto; padding: 20px 16px 100px; }
     .signout-chip {
-      position: fixed;
-      right: 18px;
-      bottom: 84px;
-      z-index: 30;
       display: inline-flex;
       align-items: center;
       gap: var(--space-xs);
@@ -123,13 +119,23 @@
     .agent-card p { margin: 0; color: var(--text-secondary); font-size: .9rem; line-height: 1.45; }
     .agent-empty { color: var(--text-secondary); }
     .agents-fab {
-      position: fixed; right: 18px; bottom: 18px; height: 56px; border-radius: 20px;
+      height: 56px; border-radius: 20px;
       border: none; background: var(--accent); color: var(--text-on-accent);
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
       padding: 0 16px;
       box-shadow: none;
       font-weight: 600;
       letter-spacing: .01em;
+    }
+    .agents-fab-stack {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
     }
     .agents-modal {
       position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: flex-end;
@@ -163,16 +169,18 @@
     <section id="agents-grid" class="agents-grid"></section>
   </main>
 
-  <div id="signout-chip" class="signout-chip">
-    <img id="chip-avatar" src="" alt="avatar" />
-    <span id="chip-name">Tobi</span>
-    <span class="signout-label">· Sign out</span>
-  </div>
+  <div class="agents-fab-stack">
+    <div id="signout-chip" class="signout-chip">
+      <img id="chip-avatar" src="" alt="avatar" />
+      <span id="chip-name">Tobi</span>
+      <span class="signout-label">· Sign out</span>
+    </div>
 
-  <button id="fab" class="agents-fab" aria-label="Create agent">
-    <span class="material-symbols-outlined" aria-hidden="true">&#xE145;</span>
-    <span>Add intern</span>
-  </button>
+    <button id="fab" class="agents-fab" aria-label="Create agent">
+      <span class="material-symbols-outlined" aria-hidden="true">&#xE145;</span>
+      <span>Add intern</span>
+    </button>
+  </div>
 
   <div id="modal" class="agents-modal" role="dialog" aria-modal="true">
     <form id="create-form" class="agents-sheet">
