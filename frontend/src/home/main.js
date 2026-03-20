@@ -3,7 +3,6 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
-  signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
@@ -34,100 +33,43 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-const signoutChip = document.getElementById("signout-chip");
-const heroLoading = document.getElementById("hero-loading");
-const heroContent = document.getElementById("hero-content");
-const chipAvatar = document.getElementById("chip-avatar");
-const chipName = document.getElementById("chip-name");
-const stateLoading = document.getElementById("state-loading");
 const btnGoogle = document.getElementById("btn-google");
-const navPane = document.getElementById("nav-pane");
-const btnDownload = document.getElementById("btn-download");
+const landingFlow = document.getElementById("landing-flow");
 
-let currentUser = null;
-
-function normalizeLandingViewport() {
-  // Returning from agents/chat can restore old scroll position on mobile.
-  window.scrollTo(0, 0);
+function showSignedOut() {
+  if (btnGoogle) btnGoogle.classList.remove("hidden");
 }
 
-function showLoggedOut() {
-  if (heroLoading) heroLoading.classList.add("hidden");
-  if (heroContent) heroContent.classList.remove("hidden");
-  stateLoading.classList.add("hidden");
-  btnGoogle.classList.remove("hidden");
-  navPane.classList.add("hidden");
-  signoutChip.classList.add("hidden");
+function redirectToAgents() {
+  window.location.replace("/agents.html");
 }
 
-function showLoggedIn(user) {
-  currentUser = user;
-  chipAvatar.src = user.photoURL || "";
-  chipName.textContent = (user.displayName || user.email || "You").split(" ")[0];
-
-  if (heroLoading) heroLoading.classList.add("hidden");
-  if (heroContent) heroContent.classList.remove("hidden");
-  stateLoading.classList.add("hidden");
-  btnGoogle.classList.add("hidden");
-  navPane.classList.remove("hidden");
-  signoutChip.classList.remove("hidden");
+if (landingFlow) {
+  window.addEventListener("pageshow", () => {
+    landingFlow.scrollTo({ top: 0, behavior: "auto" });
+  });
 }
 
 onAuthStateChanged(auth, (user) => {
-  normalizeLandingViewport();
-  user ? showLoggedIn(user) : showLoggedOut();
+  if (user) {
+    redirectToAgents();
+    return;
+  }
+  showSignedOut();
 });
 
-window.addEventListener("pageshow", () => {
-  normalizeLandingViewport();
-});
-
-btnGoogle.onclick = async () => {
-  btnGoogle.disabled = true;
-  btnGoogle.innerHTML = "<span class='spinner'></span>";
-  try {
-    await signInWithPopup(auth, provider);
-  } catch (e) {
-    console.error(e);
-    btnGoogle.disabled = false;
-    btnGoogle.innerHTML = "Sign in with Google";
-  }
-};
-
-btnDownload.onclick = async () => {
-  if (!currentUser) return;
-  const originalText = btnDownload.textContent;
-  btnDownload.disabled = true;
-  btnDownload.innerHTML = "<span class='spinner'></span> Building...";
-
-  try {
-    const exeRes = await fetch("/intern-local.exe");
-    if (!exeRes.ok) throw new Error("EXE not found");
-    const exeBlob = await exeRes.blob();
-
-    const config = {
-      user_uid: currentUser.uid,
-      user_email: currentUser.email || "",
-      backend_url: "wss://noogler-265815053881.europe-west1.run.app"
-    };
-
-    const zip = new window.JSZip();
-    zip.file("agent.exe", exeBlob);
-    zip.file("config.json", JSON.stringify(config, null, 2));
-
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    const url = URL.createObjectURL(zipBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "Noogler.zip";
-    a.click();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    alert("Failed: " + err.message);
-  } finally {
-    btnDownload.disabled = false;
-    btnDownload.textContent = originalText;
-  }
-};
-
-signoutChip.onclick = () => signOut(auth);
+if (btnGoogle) {
+  btnGoogle.onclick = async () => {
+    const original = btnGoogle.innerHTML;
+    btnGoogle.disabled = true;
+    btnGoogle.innerHTML = "<span class='spinner'></span>";
+    try {
+      await signInWithPopup(auth, provider);
+      redirectToAgents();
+    } catch (e) {
+      console.error(e);
+      btnGoogle.disabled = false;
+      btnGoogle.innerHTML = original;
+    }
+  };
+}
