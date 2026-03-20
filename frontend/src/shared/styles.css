@@ -328,8 +328,8 @@ input {
 }
 
 .from-me .wa-bubble {
-  background-color: var(--accent-soft);
-  color: var(--text-primary);
+  background-color: var(--mybubble1);
+  color: var(--black);
 }
 
 .wa-chat-text {
