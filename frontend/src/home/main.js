@@ -38,12 +38,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-try {
-  await setPersistence(auth, browserLocalPersistence);
-} catch {
-  await setPersistence(auth, browserSessionPersistence);
-}
-
 const btnGoogle = document.getElementById("btn-google");
 const btnGoogleLabel = document.getElementById("btn-google-label");
 const btnGoogleSpinner = document.getElementById("btn-google-spinner");
@@ -79,19 +73,27 @@ if (landingFlow) {
   });
 }
 
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    redirectToAgents();
-    return;
+async function initAuth() {
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+  } catch {
+    await setPersistence(auth, browserSessionPersistence);
   }
-  showSignedOut();
-});
 
-getRedirectResult(auth).catch((e) => {
-  console.error(e);
-  setLoading(false);
-  setStatus("Sign-in failed. Please try again.");
-});
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      redirectToAgents();
+      return;
+    }
+    showSignedOut();
+  });
+
+  getRedirectResult(auth).catch((e) => {
+    console.error(e);
+    setLoading(false);
+    setStatus("Sign-in failed. Please try again.");
+  });
+}
 
 if (btnGoogle) {
   btnGoogle.onclick = async () => {
@@ -111,3 +113,9 @@ if (btnGoogle) {
     }
   };
 }
+
+initAuth().catch((e) => {
+  console.error(e);
+  setStatus("Sign-in setup failed. Refresh and try again.");
+  showSignedOut();
+});
