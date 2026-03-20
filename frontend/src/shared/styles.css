@@ -500,7 +500,7 @@ input {
   height: 46px;
   border-radius: var(--radius-full);
   background-color: var(--accent);
-  color: var(--text-on-accent);
+  color: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
