@@ -15,6 +15,56 @@
   <style>
     body {
       background: var(--bg-primary);
+      overflow-y: auto !important;
+      height: auto !important;
+    }
+    
+    .search-container {
+      display: flex;
+      align-items: center;
+      background: var(--bg-secondary);
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      transition: width 0.3s cubic-bezier(0.2, 0, 0, 1);
+      width: 40px;
+      height: 40px;
+      margin-left: auto;
+    }
+
+    .search-container.expanded {
+      width: 220px;
+    }
+
+    .search-icon-btn {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      border: none;
+      background: transparent;
+      outline: none;
+    }
+
+    .search-input {
+      flex: 1;
+      height: 100%;
+      border: none !important;
+      background: transparent !important;
+      padding: 0 14px 0 0 !important;
+      font-size: 0.95rem;
+      outline: none;
+      width: 0;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .search-container.expanded .search-input {
+      width: auto;
+      opacity: 1;
     }
 
     .agents-shell {
@@ -335,8 +385,14 @@
 
 <body>
   <main class="agents-shell">
-    <div class="agents-top">
+    <div class="agents-top" style="justify-content: space-between;">
       <h1 class="agents-title">Manage Agents</h1>
+      <div class="search-container">
+        <button class="search-icon-btn" id="search-btn" aria-label="Search agents">
+          <span class="material-symbols-outlined" aria-hidden="true">search</span>
+        </button>
+        <input type="text" id="search-input" class="search-input" placeholder="Search agents..." />
+      </div>
     </div>
     <div id="agents-empty" class="agent-empty">No agents yet. Create one with +</div>
     <section id="agents-grid" class="agents-grid"></section>
@@ -442,13 +498,48 @@
       empty.style.display = 'none';
     }
 
+    let allAgents = [];
+    let searchQuery = "";
+
+    const searchBtn = document.getElementById('search-btn');
+    const searchInput = document.getElementById('search-input');
+    const searchContainer = searchBtn.parentElement;
+
+    searchBtn.onclick = () => {
+      searchContainer.classList.toggle('expanded');
+      if (searchContainer.classList.contains('expanded')) {
+        searchInput.focus();
+      } else {
+        if (searchInput.value) {
+          searchInput.value = '';
+          searchQuery = '';
+          renderAgentsGrid();
+        }
+      }
+    };
+
+    searchInput.oninput = (e) => {
+      searchQuery = e.target.value.toLowerCase();
+      renderAgentsGrid();
+    };
+
     async function renderAgents() {
       showSkeletons();
       const snap = await get(ref(db, `users/${uid}/agents`));
-      const agents = snap.exists() ? Object.entries(snap.val()) : [];
+      allAgents = snap.exists() ? Object.entries(snap.val()) : [];
+      renderAgentsGrid();
+    }
+
+    function renderAgentsGrid() {
       grid.innerHTML = '';
-      empty.style.display = agents.length ? 'none' : 'block';
-      agents.forEach(([id, item]) => {
+      
+      const filteredAgents = allAgents.filter(([id, item]) => 
+        (item.agent_tag || 'Agent 1').toLowerCase().includes(searchQuery) ||
+        (item.agent_soul || '').toLowerCase().includes(searchQuery)
+      );
+
+      empty.style.display = filteredAgents.length ? 'none' : 'block';
+      filteredAgents.forEach(([id, item]) => {
         const card = document.createElement('div');
         card.className = 'agent-card';
         card.setAttribute('role', 'button');
