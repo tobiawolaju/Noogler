@@ -8,6 +8,7 @@
   <link rel="manifest" href="/manifest.webmanifest" />
   <title>Noogler</title>
   <link rel="stylesheet" href="/src/shared/styles.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" />
   <style>
     body {
       margin: 0;
@@ -343,8 +344,9 @@
     </section>
 
     <section class="panel panel-cta">
-      <h2 class="cta-title">Start With Google</h2>
-      <p class="cta-copy">Sign in to create and manage your agents.</p>
+      <h2 class="cta-title" id="cta-title">Start With Google</h2>
+      <p class="cta-copy" id="cta-copy">Sign in to create and manage your agents.</p>
+      
       <button class="btn google" id="btn-google">
         <svg width="18" height="18" viewBox="0 0 48 48">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
@@ -355,6 +357,19 @@
         <span id="btn-google-label">Sign in with Google</span>
         <span id="btn-google-spinner" class="btn-spinner hidden" aria-hidden="true"></span>
       </button>
+
+      <div id="user-profile-section" class="hidden" style="display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 8px;">
+        <img id="user-profile-img" src="" alt="Profile" style="width: 58px; height: 58px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); object-fit: cover;">
+        <button class="btn google" id="btn-logout" style="width: min(300px, 92vw); padding: 0 16px;">
+          <span class="material-symbols-outlined" style="font-size: 20px; color: #ea4335;">logout</span>
+          <span>Sign out</span>
+        </button>
+      </div>
+
+      <button id="btn-clear-cache" class="hidden" style="margin-top: 32px; background: rgba(0,0,0,0.15); color: #eafff2; border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+        Fix Login Issues (Clear Cache)
+      </button>
+
       <p id="signin-status" class="signin-status" role="status" aria-live="polite"></p>
     </section>
   </main>
