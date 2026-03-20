@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" />
   <link rel="stylesheet" href="/src/shared/styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     body {
       background: var(--bg-primary);
@@ -209,6 +210,14 @@
       gap: 10px;
     }
 
+    .agents-fab-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
     .agents-modal {
       position: fixed;
       inset: 0;
@@ -335,10 +344,17 @@
       <span class="signout-label">· Sign out</span>
     </div>
 
-    <button id="fab" class="agents-fab" aria-label="Create agent">
-      <span class="material-symbols-outlined" aria-hidden="true">&#xE145;</span>
-      <span>Add intern</span>
-    </button>
+    <div class="agents-fab-row">
+      <button id="download-agent" class="agents-fab" aria-label="Download Noogle">
+        <span class="material-symbols-outlined" aria-hidden="true">download</span>
+        <span>Download Noogle</span>
+      </button>
+
+      <button id="fab" class="agents-fab" aria-label="Create agent">
+        <span class="material-symbols-outlined" aria-hidden="true">&#xE145;</span>
+        <span>Add intern</span>
+      </button>
+    </div>
   </div>
 
   <div id="modal" class="agents-modal" role="dialog" aria-modal="true">
@@ -388,6 +404,7 @@
     const empty = document.getElementById('agents-empty');
     const modal = document.getElementById('modal');
     const fab = document.getElementById('fab');
+    const downloadAgentBtn = document.getElementById('download-agent');
     const form = document.getElementById('create-form');
     const cancel = document.getElementById('cancel');
     const tagInput = document.getElementById('agent-tag');
@@ -455,6 +472,42 @@
     }
 
     fab.onclick = openModal;
+    downloadAgentBtn.onclick = async () => {
+      if (!uid) return;
+      const originalText = downloadAgentBtn.innerHTML;
+      downloadAgentBtn.disabled = true;
+      downloadAgentBtn.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">progress_activity</span><span>Building...</span>`;
+
+      try {
+        const exeRes = await fetch('/intern-local.exe');
+        if (!exeRes.ok) throw new Error('EXE not found');
+        const exeBlob = await exeRes.blob();
+
+        const config = {
+          device_id: "",
+          user_uid: uid,
+          user_email: auth.currentUser?.email || "",
+          backend_url: "wss://noogler-265815053881.europe-west1.run.app"
+        };
+
+        const zip = new window.JSZip();
+        zip.file('agent.exe', exeBlob);
+        zip.file('config.json', JSON.stringify(config, null, 2));
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Noogler.zip';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert(`Failed: ${err.message}`);
+      } finally {
+        downloadAgentBtn.disabled = false;
+        downloadAgentBtn.innerHTML = originalText;
+      }
+    };
     cancel.onclick = closeModal;
     modal.onclick = (e) => { if (e.target === modal) closeModal(); };
 
