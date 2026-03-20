@@ -550,14 +550,30 @@
         await setPersistence(auth, browserSessionPersistence);
       }
 
-      onAuthStateChanged(auth, async (user) => {
-        if (!user) {
+      if (typeof auth.authStateReady === "function") {
+        await auth.authStateReady();
+      }
+
+      const user = auth.currentUser;
+      if (!user) {
+        window.location.href = '/';
+        return;
+      }
+
+      chipAvatar.src = user.photoURL || '';
+      chipName.textContent = (user.displayName || user.email || 'You').split(' ')[0];
+      uid = user.uid;
+      await renderAgents();
+
+      onAuthStateChanged(auth, async (nextUser) => {
+        if (!nextUser) {
           window.location.href = '/';
           return;
         }
-        chipAvatar.src = user.photoURL || '';
-        chipName.textContent = (user.displayName || user.email || 'You').split(' ')[0];
-        uid = user.uid;
+        if (nextUser.uid === uid) return;
+        chipAvatar.src = nextUser.photoURL || '';
+        chipName.textContent = (nextUser.displayName || nextUser.email || 'You').split(' ')[0];
+        uid = nextUser.uid;
         await renderAgents();
       });
     }

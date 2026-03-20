@@ -80,12 +80,18 @@ async function initAuth() {
     await setPersistence(auth, browserSessionPersistence);
   }
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      redirectToAgents();
-      return;
-    }
+  if (typeof auth.authStateReady === "function") {
+    await auth.authStateReady();
+  }
+
+  if (auth.currentUser) {
+    redirectToAgents();
+  } else {
     showSignedOut();
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) redirectToAgents();
   });
 
   getRedirectResult(auth).catch((e) => {
