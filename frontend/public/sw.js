@@ -1,5 +1,5 @@
-const CACHE_NAME = "noogler-shell-v3";
-const APP_SHELL = ["/manifest.webmanifest", "/icon.svg"];
+const CACHE_NAME = "noogler-shell-v4";
+const APP_SHELL = ["/manifest.webmanifest", "/logo.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
