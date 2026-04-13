@@ -17,7 +17,7 @@ From vibe coding and software development to creating 3D models in tools like Bl
 Instead of just interacting with APIs, **Noogler** operates desktop applications directly through their coordinate-based interfaces, making it capable of handling workflows in browsers, IDEs, Slack, Excel, or any other software.
 
 ### The Brain
-Powered by **Google Gemini 2.0 (Multimodal & Live API)**, it has the ability to see frames in real-time and maintain a natural, low-latency voice conversation.
+Powered by **ElizaOS v2** running on **Nosana (Qwen3.5-27B-AWQ-4bit)**, it reasons over desktop state and sends executable steps to the local automation agent.
 
 ---
 
@@ -43,7 +43,7 @@ It interacts with Windows using:
 
 The system consists of three primary components that work in sync:
 
-1.  **Cloud Backend (Node.js)**: The central logic hub. It manages user sessions, brokers messages between the UI and Gemini, and persists conversation history to Firebase.
+1.  **Cloud Backend (Node.js)**: The central logic hub. It manages user sessions, brokers messages between the UI and ElizaOS, and persists conversation history to Firebase.
 2.  **Svelte Frontend**: A modern, purple-themed web interface for chat, voice call management, and agent configuration.
 3.  **Local Agent (Rust)**: A lightweight, native Windows executable that performs the actual desktop automation and screen capture.
 
@@ -53,7 +53,9 @@ flowchart TD
     User([User]) <--> Frontend[Svelte Interface]
     Frontend <--> Backend[Node.js Backend]
     Backend <--> Firebase[(Firebase RTDB)]
-    Backend <--> Gemini[[Gemini Live API]]
+    Frontend <--> Eliza[ElizaOS v2 Runtime]
+    Eliza <--> Nosana[[Nosana Qwen3.5-27B]]
+    Eliza <--> Backend
     Backend <--> RustAgent[Rust Local Agent]
     RustAgent <--> Desktop[Windows Desktop]
 ```
@@ -66,7 +68,7 @@ flowchart TD
 The-Intern/
 ├── backend/            # Node.js Server
 │   ├── src/
-│   │   ├── agent.ts    # Gemini logic & session management
+│   │   ├── agent.ts    # Eliza orchestration & session management
 │   │   ├── db.ts       # Firebase Realtime Database integration
 │   │   └── server.ts   # WebSocket & REST server
 │   └── .env            # API Keys & Config
@@ -87,16 +89,16 @@ Memory is handled via **Firebase Realtime Database**. The `backend` buffers voic
 # Installation & Setup
 
 ### 1. Prerequisites
-*   **Node.js 20+**
+*   **Node.js 23+**
 *   **Rust (for building the client)**
 *   **Firebase Project** (with Realtime Database enabled)
-*   **Google Gemini API Key**
+*   **Nosana endpoint access** (free endpoint supported)
 
 ### 2. Backend Setup
 ```bash
 cd backend
 npm install
-# Configure your .env with GEMINI_API_KEY and FIREBASE secrets
+# Configure your .env with ELIZA_BASE_URL and FIREBASE secrets
 npm run dev
 ```
 
@@ -126,7 +128,7 @@ Copy the resulting `intern-local.exe` from `target/release/` to `frontend/public
 # Tech Stack
 
 *   **Logic**: Node.js (TypeScript)
-*   **AI**: Google Gemini 2.0 (Multimodal Live)
+*   **AI**: ElizaOS v2 + Nosana-hosted Qwen3.5-27B-AWQ-4bit
 *   **Frontend**: SvelteKit, Vite, Vanilla CSS
 *   **Automation**: Rust (enigo for input, scrap for capture)
 *   **Database**: Firebase Realtime Database
@@ -137,3 +139,50 @@ Copy the resulting `intern-local.exe` from `target/release/` to `frontend/public
 # License
 MIT License
 
+
+
+---
+
+# ElizaOS v2 Integration
+
+## New Runtime Folder
+`eliza-agent/` contains the Eliza-compatible reasoning service used by `backend/src/agent.ts`.
+
+- `eliza-agent/src/server.ts`: HTTP reasoning endpoints (`/reason/plan`, `/reason/action`, `/reason/chat`)
+- `eliza-agent/src/plugins/desktop.ts`: custom `EXECUTE_ON_DESKTOP` action contract
+- `eliza-agent/characters/noogler.json`: default Noogler character
+- `eliza-agent/characters/homework-agent.json`, `office-assistant.json`: alternate personalities sharing the same desktop action plugin
+
+## Eliza Setup (Bun)
+```bash
+# one-time
+bun i -g @elizaos/cli
+
+# run local reasoning service
+cd eliza-agent
+bun install
+bun run start
+```
+
+## Updated Architecture
+```mermaid
+flowchart LR
+    User[Phone / Browser] <--> Eliza[ElizaOS in Nosana Container]
+    Eliza <--> Backend[Node.js Backend]
+    Backend <--> Rust[Local Rust Agent on Windows]
+    Rust <--> Desktop[User Desktop]
+    Backend <--> Firebase[(Firebase RTDB)]
+    Eliza <--> Nosana[[Qwen3.5-27B-AWQ-4bit]]
+```
+
+## Nosana Deployment (Backend + Eliza Agent)
+1. Build and publish the root `Dockerfile`.
+2. Deploy the image to `deploy.nosana.com`.
+3. Expose backend port `8080` (and optionally Eliza internal `7070` if needed for debugging).
+4. Set environment variables from `.env.example` in the Nosana deployment form.
+5. Keep the Rust executable running on the user's local Windows machine; it connects over WebSocket to the backend.
+
+## Environment Variables
+See `.env.example` for full values, including:
+- Backend: `PORT`, `LOG_LEVEL`, `ELIZA_BASE_URL`, Firebase credentials
+- Eliza/Nosana: `ELIZA_PORT`, `NOSANA_BASE_URL`, `NOSANA_MODEL`, optional `NOSANA_API_KEY`, `ELIZA_CHARACTER`
