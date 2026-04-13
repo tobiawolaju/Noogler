@@ -1,0 +1,13 @@
+.git/
+node_modules/
+**/node_modules/
+client-rust/
+frontend/
+.env
+.env.*
+*.env
+
+# local/dev artifacts
+**/dist/
+**/coverage/
+*.log
