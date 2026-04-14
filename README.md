@@ -58,6 +58,22 @@ flowchart TD
     Eliza <--> Backend
     Backend <--> RustAgent[Rust Local Agent]
     RustAgent <--> Desktop[Windows Desktop]
+
+    classDef user fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#111827;
+    classDef ui fill:#e9d5ff,stroke:#7c3aed,stroke-width:2px,color:#111827;
+    classDef backend fill:#bfdbfe,stroke:#2563eb,stroke-width:2px,color:#111827;
+    classDef ai fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#111827;
+    classDef db fill:#fde68a,stroke:#ca8a04,stroke-width:2px,color:#111827;
+    classDef agent fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#111827;
+    classDef desktop fill:#d1d5db,stroke:#4b5563,stroke-width:2px,color:#111827;
+
+    class User user;
+    class Frontend ui;
+    class Backend backend;
+    class Eliza,Nosana ai;
+    class Firebase db;
+    class RustAgent agent;
+    class Desktop desktop;
 ```
 
 ---
