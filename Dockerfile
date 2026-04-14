@@ -10,7 +10,7 @@ RUN npm install -g bun
 
 # Install backend dependencies (including dev deps required for TypeScript build).
 COPY backend/package*.json ./backend/
-RUN npm --prefix backend ci
+RUN npm --prefix backend ci --include=dev
 
 # Install Eliza agent dependencies.
 COPY eliza-agent/package.json ./eliza-agent/
