@@ -22,7 +22,7 @@
   let editingApiKey = false;
 
   $: if (hasApiKey && !apiKey) editingApiKey = false;
-  $: apiKeyPlaceholder = hasApiKey ? "***********************" : "Optional provider API key";
+  $: apiKeyPlaceholder = hasApiKey ? "***********************" : "Paste Gemini API key";
 </script>
 
 {#if visible}
@@ -51,7 +51,7 @@
       </div>
 
       <div class="wa-settings-group">
-        <label for="gemini-api-key">API Key (optional)</label>
+        <label for="gemini-api-key">API Key (Gemini)</label>
         <div class="wa-inline-field">
           <input
             id="gemini-api-key"
