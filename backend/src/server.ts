@@ -145,7 +145,7 @@ wss.on("connection", (ws) => {
             return;
           }
           // Backward-compatible fallback for users who only have legacy AI history
-          getHistory(clientUid!).then(history => {
+          getHistory(clientUid).then(history => {
             if (history && history.length > 0) {
               const historyEvents = history.map(turn => {
                 const text = turn.parts?.[0]?.text || "";
@@ -326,7 +326,7 @@ wss.on("connection", (ws) => {
                 const event = makeEvent("chat_reply", "ok", response.text);
                 const replyEvent = { ...event, type: "chat_reply", text: response.text };
                 ws.send(JSON.stringify(replyEvent));
-                appendChatEvent(clientUid!, replyEvent).catch((err) => log("error", "Failed to save conversation reply event", err));
+                appendChatEvent(clientUid, replyEvent).catch((err) => log("error", "Failed to save conversation reply event", err));
               }
            } else if (response.type === "commands") {
               if (!agentWs || agentWs.readyState !== WebSocket.OPEN) {
@@ -338,13 +338,13 @@ wss.on("connection", (ws) => {
               const event = makeEvent("chat_reply", "ok", response.text);
               const replyEvent = { ...event, type: "chat_reply", text: response.text };
               ws.send(JSON.stringify(replyEvent));
-              appendChatEvent(clientUid!, replyEvent).catch((err) => log("error", "Failed to save command reply event", err));
+              appendChatEvent(clientUid, replyEvent).catch((err) => log("error", "Failed to save command reply event", err));
            }
         }).catch(err => {
            log("error", "Agent error", err);
            const errorEvent = makeEvent("agent_error", "error", "AI failed to process instruction");
            ws.send(JSON.stringify(errorEvent));
-           appendChatEvent(clientUid!, errorEvent).catch((saveErr) => log("error", "Failed to save agent error event", saveErr));
+           appendChatEvent(clientUid, errorEvent).catch((saveErr) => log("error", "Failed to save agent error event", saveErr));
         });
 
         return;
